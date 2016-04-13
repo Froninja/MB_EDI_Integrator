@@ -275,7 +275,7 @@ class OutputTranslator(QtCore.QObject):
             with open(self.settings['destlog'], 'r') as dest_log:
                 for line in dest_log:
                     line = line.split(',')
-                    if line[0] == invoice.customer and line[1] == mb_dest:
+                    if line[0] == invoice.customer and line[1] == str(mb_dest):
                         invoice.store_number = line[2].zfill(4)
                         invoice.distribution_center = line[3].zfill(4)
                         invoice.store_name = line[4].rstrip('\n').rstrip('\r')
