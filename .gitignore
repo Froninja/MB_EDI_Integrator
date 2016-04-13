@@ -45,3 +45,9 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+bin/Config.txt
+Config.txt
+MB_EDI_Integrator.sln
+*.suo
+MB_EDI_Integrator.pyproj
+*.pyc
