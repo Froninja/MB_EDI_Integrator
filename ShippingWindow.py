@@ -121,7 +121,7 @@ class ShippingWindow(Ui_MainWindow):
                           re.search(r'[0-9]+', items[num * 3 + 2].text()).group(0), 0, False])
         print(array)
         thread1 = ProgressThread("Processing")
-        o = OutputTranslator(self.CustomerBox.currentText(), self.settings, self.AppendCheck.isChecked())
+        o = OutputTranslator(self.CustomerBox.currentText(), self.settings)
         o.get_customer_settings()
         o.initiate_db()
         thread1.start()
@@ -131,7 +131,7 @@ class ShippingWindow(Ui_MainWindow):
     def execute_translator(self):
         thread1 = ProgressThread("Processing")
         t = TranslatorUnitTest(self.settings)
-        o = OutputTranslator(self.CustomerBox.currentText(), self.settings, self.AppendCheck.isChecked())
+        o = OutputTranslator(self.CustomerBox.currentText(), self.settings)
         o.get_customer_settings()
         o.initiate_db()
         array = []

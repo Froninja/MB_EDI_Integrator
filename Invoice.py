@@ -138,8 +138,10 @@ class Product(object):
         a different UPC for a given style than what is set in the DB) and
         replaces the UPC if the style and customer match"""
         with open(exception_path, 'r') as exception_list:
+            print(self.long_style, customer)
             for line in exception_list:
                 line = line.rstrip('\n').split(',')
-                if line[0] == customer:
-                    if line[1] == self.long_style:
-                        self.UPC = line[2]
+                print(line[:2], [customer, self.long_style])
+                if line[:2] == [customer, self.long_style]:
+                    self.UPC = line[2]
+                    print(self.long_style, self.UPC)
