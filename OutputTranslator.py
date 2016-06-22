@@ -7,6 +7,7 @@ import time
 import pymssql
 import threading
 import os.path
+import re
 
 class ProgressThread(threading.Thread):
     def __init__(self, text):
@@ -127,7 +128,7 @@ class OutputTranslator(QtCore.QObject):
                 self.w = TrackingWarningDialog(invoice.invoice_number)
                 self.w.exec_()
                 if self.w.confirmed == True:
-                    invoice.tracking_number = self.w.tracking
+                    invoice.tracking_number = self.w.tracking.strip('\n').strip('\r')
                     invoice.shipping_information_from_tracking(self.settings['shiplog'])
                 else:
                     return False
@@ -309,7 +310,7 @@ class OutputTranslator(QtCore.QObject):
                     self.w = UPCWarningDialog(item.long_style, invoice.invoice_number)
                     self.w.exec_()
                     if self.w.confirmed == True:
-                        item.UPC = self.w.UPC
+                        item.UPC = self.w.UPC.strip('\r').strip('\n')
                     else:
                         return False
         print("%s UPCs assigned" % datetime.now())
@@ -360,8 +361,10 @@ class OutputTranslator(QtCore.QObject):
                         return False
                 return True
             else:
+                detail_string = "Stores on PO# %s:\n" % po.po_number + "\n".join(["%s"] * len(po.stores)) %\
+                    tuple([s.store_num for store in po.stores.values()])
                 m = WarningDialog("Store# %s (invoice# %s) is not allocated on PO# %s"\
-                    % (invoice.store_number, invoice.invoice_number, po.po_number))
+                    % (invoice.store_number, invoice.invoice_number, po.po_number), detail=detail_string)
                 if m.exec_() == QtWidgets.QMessageBox.Cancel:
                     return False
                 return True
@@ -375,19 +378,29 @@ class OutputTranslator(QtCore.QObject):
             else:
                 return False
         else:
-            detail_string = "Items on store# %s:\n" % store.store_num + "\n".join(["%s"] * len(store.items)) %\
+            """detail_string = "Items on store# %s:\n" % store.store_num + "\n".join(["%s"] * len(store.items)) %\
                 tuple([i.style_num + " | " + i.UPC for i in store.items.values()])
             m = WarningDialog("Style %s (UPC %s) on invoice# %s is not allocated to store# %s on PO# %s"\
                 % (item.long_style, item.UPC, inv_num, store.store_num, po_num), detail=detail_string)
             if m.exec_() == QtWidgets.QMessageBox.Cancel:
                 return False
-            return True
+            return True"""
+            self.w = UPCPOWarningDialog(QtWidgets.QDialog(), item, inv_num, po_num, store)
+            self.w.parent.exec_()
+            if self.w.confirmed == False:
+                return False
+            elif self.w.confirmed == True:
+                item = self.w.item
+                return True
+
+            
 
     def item_qty_for_store_check(self, item, store, inv_num, po_num):
         if item.qty_each != float(store.items[item.UPC].total_qty):
             print("Calling warning dialog")
+            detail_string = "Qty on store# %s: %s" % (store.store_num, store.items[item.UPC].total_qty)
             m = WarningDialog("Qty of style %s on invoice# %s does not match qty for store# %s on PO# %s"\
-                % (item.long_style, inv_num, store.store_num, po_num))
+                % (item.long_style, inv_num, store.store_num, po_num), detail=detail_string)
             if m.exec_() == QtWidgets.QMessageBox.Cancel:
                 return False
             return True

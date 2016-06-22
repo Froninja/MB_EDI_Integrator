@@ -1,1 +1,1 @@
-S,Inv,Store,Track,ShipDate,DiscCode,Disc,SSCC,PO,Dept,DC,Qty,CreateDate
+S,Inv,Store,Track,ShipDate,DiscCode,Disc,SSCC,PO,Dept,DC,Qty,CreateDate,Carrier,Original

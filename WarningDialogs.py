@@ -1,4 +1,7 @@
 from PyQt5 import QtWidgets, QtGui
+from UiUPCWarningDialog import Ui_Dialog
+from PurchaseOrder import *
+from Invoice import *
 import sys
 
 class WarningDialog(QtWidgets.QMessageBox):
@@ -240,8 +243,53 @@ class DescriptionWarningDialog(QtWidgets.QDialog):
     def cancel_clicked(self):
         self.close()
 
+class UPCPOWarningDialog(Ui_Dialog):
+    def __init__(self, parent, item, inv_num, po_num, store):
+        super(Ui_Dialog, self).__init__()
+        self.parent = parent
+        self.item = item
+        self.confirmed = False
+        self.setupUi(parent)
+        self.populate_table(store)
+        self.WarningLabel.setText("UPC %s (Style %s) on invoice# %s is not allocated to store# %s on PO# %s" %
+                                  (item.UPC, item.long_style, inv_num, store.store_num, po_num))
+        self.IgnoreButton.clicked.connect(self.ignore_clicked)
+        self.ConfirmButton.clicked.connect(self.confirm_clicked)
+        self.CancelButton.clicked.connect(self.cancel_clicked)
+
+    def populate_table(self, store):
+        self.tableWidget.setHorizontalHeaderLabels(['Style', 'UPC', 'Cost', 'Qty'])
+        row = 0
+        self.tableWidget.setRowCount(len(store.items.values()))
+        for item in store.items.values():
+            self.tableWidget.setItem(row, 0, QtWidgets.QTableWidgetItem(item.style_num))
+            self.tableWidget.setItem(row, 1, QtWidgets.QTableWidgetItem(item.UPC))
+            self.tableWidget.setItem(row, 2, QtWidgets.QTableWidgetItem('$' + str(item.cost)))
+            self.tableWidget.setItem(row, 3, QtWidgets.QTableWidgetItem(str(item.total_qty)))
+            row += 1
+        
+    def ignore_clicked(self):
+        self.confirmed = True
+        self.parent.close()
+
+    def confirm_clicked(self):
+        self.item.UPC = self.tableWidget.selectedItems()[1].text()
+        self.confirmed = True
+        self.parent.close()
+
+    def cancel_clicked(self):
+        self.confirmed = False
+        self.parent.close()
+
 if __name__ == '__main__':
     x = QtWidgets.QApplication(sys.argv)
-    a = StoreWarningDialog(7, [8])
-    a.show()
+    d = QtWidgets.QDialog()
+    i = Product("ABC")
+    i.UPC = "12345"
+    s = Store("123")
+    s.items["1"] = Item("12346")
+    s.items["2"] = Item("23468")
+    a = UPCPOWarningDialog(d, i, "5322", "932185", s)
+    a.parent.show()
     x.exec_()
+    print(a.item.UPC)
