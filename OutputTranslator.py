@@ -362,7 +362,7 @@ class OutputTranslator(QtCore.QObject):
                 return True
             else:
                 detail_string = "Stores on PO# %s:\n" % po.po_number + "\n".join(["%s"] * len(po.stores)) %\
-                    tuple([s.store_num for store in po.stores.values()])
+                    tuple([store.store_num for store in po.stores.values()])
                 m = WarningDialog("Store# %s (invoice# %s) is not allocated on PO# %s"\
                     % (invoice.store_number, invoice.invoice_number, po.po_number), detail=detail_string)
                 if m.exec_() == QtWidgets.QMessageBox.Cancel:

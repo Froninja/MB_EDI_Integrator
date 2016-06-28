@@ -43,6 +43,6 @@ def read_config(config_file):
     return settings
 
 if __name__ == '__main__':
-    settings = read_config('P:\EDI\MB_EDI_2016\config.txt')
+    settings = read_config('P:\EDI\MB_EDI_Integrator\\bin\config.txt')
     db = PurchaseOrderDB(settings)
     db.get_po_from_export()
