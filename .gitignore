@@ -51,3 +51,4 @@ MB_EDI_Integrator.sln
 *.suo
 MB_EDI_Integrator.pyproj
 *.pyc
+*.csv
