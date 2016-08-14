@@ -69,18 +69,18 @@ class PurchaseOrder(object):
                         store.total_cost += float(item.cost)
                         store.total_qty += float(item.total_qty)
 
-    def __repr__(self):
+    """def __repr__(self):
         return_string = "{0}: #{1}, Start: {2}, Cancel: {3}, Create: {4}, Cost ${5}\n".format(
             self.customer, self.po_number, self.start_ship, self.cancel_ship,
             self.creation_date, self.total_cost)
-        for store in sorted(self.stores.items, lambda x: x.store_num):
+        for store in sorted(self.stores.values(), key=lambda x: x.store_num):
             return_string += store.__repr__()
 
     def __hash__(self):
         return hash(self.__repr__())
 
     def __eq__(self, comp):
-        return self.__hash__() == comp.__hash__()
+        return self.__hash__() == comp.__hash__()"""
 
 class Item(object):
     def __init__(self, UPC):
@@ -104,10 +104,10 @@ class Store(object):
         self.shipped_qty = 0
         self.shipped = False
 
-    def __repr__(self):
+    """def __repr__(self):
         return_string = "{0}: Cost: ${1}, Qty {2}\n".format(self.store_num,
                                                           self.total_cost,
                                                           self.total_qty)
-        for item in sorted(self.items.items(), lambda x: x.UPC):
+        for item in sorted(self.items.values(), key=lambda x: x.UPC):
             return_string += item.__repr__()
-        return return_string
+        return return_string"""
