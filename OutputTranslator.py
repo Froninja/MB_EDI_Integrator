@@ -313,6 +313,7 @@ class OutputTranslator(QtCore.QObject):
                         item.UPC = self.w.UPC.strip('\r').strip('\n')
                     else:
                         return False
+                item.UPC_exception_check(self.settings['upcexceptlog'], invoice.customer)
         print("%s UPCs assigned" % datetime.now())
         self.progress += 1
         return True
@@ -343,9 +344,9 @@ class OutputTranslator(QtCore.QObject):
     def store_and_item_checks(self):
         for invoice in self.invoice_list:
             try:
-                if not self.store_for_po_check(invoice):
-                    return False
                 invoice.po_create_date = self.po_db.query(invoice.purchase_order_number).creation_date
+                if not self.store_for_po_check(invoice):
+                    return False                
             except (KeyError, AttributeError):
                 continue
         self.progress += 1

@@ -33,7 +33,10 @@ class PurchaseOrderDB(object):
         po.dept = row['dept']
         po.label = row['label']
         po.shipped_cost = row['shippedcost']
-        po.shipped_invs = pickle.loads(row['shippedinvs'])
+        try:
+            po.shipped_invs = pickle.loads(row['shippedinvs'])
+        except pickle.UnpicklingError:
+            pass
         try:
             po.start_ship = datetime.strptime(row['startdate'], '%Y-%m-%d')
         except ValueError:
@@ -216,11 +219,13 @@ class PurchaseOrderDB(object):
             with open(export_path, 'r') as export:
                 for line in export:
                     line = line.rstrip('\n').rstrip('r').split(',')
-                    self.create_po(line, po_dict)
+                    self._create_po(line, po_dict)
         except FileNotFoundError:
             print("Could not find file %s" % export_path)
+        db_list = self.querymany(po_dict.keys())
+
                     
-    def create_po(self, line, po_dict):
+    def _create_po(self, line, po_dict):
         if line[0] != 'T':
             if line[1].lstrip('0') not in po_dict:
                 po = PurchaseOrder(line[1].lstrip('0'), self.get_customer_from_export(line[0]))
@@ -230,22 +235,22 @@ class PurchaseOrderDB(object):
                 po.creation_date = datetime.strptime(line[10], "%Y/%m/%d")
                 po.dept = line[11]
                 po_dict[po.po_number] = po
-                self.add_store_to_po(line, po)
+                self._add_store_to_po(line, po)
             else:
                 po = po_dict[line[1].lstrip('0')]
-                self.add_store_to_po(line, po)
+                self._add_store_to_po(line, po)
             
-    def add_store_to_po(self, line, po):
+    def _add_store_to_po(self, line, po):
         if line[4] not in po.stores:
             st = Store(line[4])
             print("Creating store# %s" % st.store_num)
             po.stores[st.store_num] = st
-            self.add_item_to_store(line, st)
+            self._add_item_to_store(line, st)
         else:
             st = po.stores[line[4]]
-            self.add_item_to_store(line, st)
+            self._add_item_to_store(line, st)
             
-    def add_item_to_store(self, line, store):
+    def _add_item_to_store(self, line, store):
         if line[5] not in store.items:
             item = Item(line[5])
             print("Creating item with UPC #%s" % item.UPC)
