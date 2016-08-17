@@ -35,7 +35,7 @@ class PurchaseOrderDB(object):
         po.shipped_cost = row['shippedcost']
         try:
             po.shipped_invs = pickle.loads(row['shippedinvs'])
-        except pickle.UnpicklingError:
+        except (pickle.UnpicklingError, EOFError):
             pass
         try:
             po.start_ship = datetime.strptime(row['startdate'], '%Y-%m-%d')
