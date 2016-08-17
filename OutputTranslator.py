@@ -93,7 +93,7 @@ class OutputTranslator(QtCore.QObject):
 
     def get_sql_connection(self):
         """
-        Returns a pyodbc connection object based on the connection string in
+        Returns a pymssql connection object based on the connection string in
         settings.
         """
         self.progress += 1
@@ -313,6 +313,7 @@ class OutputTranslator(QtCore.QObject):
                         item.UPC = self.w.UPC.strip('\r').strip('\n')
                     else:
                         return False
+                item.UPC_exception_check(self.settings['upcexceptlog'], invoice.customer)
         print("%s UPCs assigned" % datetime.now())
         self.progress += 1
         return True
@@ -343,9 +344,9 @@ class OutputTranslator(QtCore.QObject):
     def store_and_item_checks(self):
         for invoice in self.invoice_list:
             try:
-                if not self.store_for_po_check(invoice):
-                    return False
                 invoice.po_create_date = self.po_db.query(invoice.purchase_order_number).creation_date
+                if not self.store_for_po_check(invoice):
+                    return False                
             except (KeyError, AttributeError):
                 continue
         self.progress += 1
@@ -378,13 +379,6 @@ class OutputTranslator(QtCore.QObject):
             else:
                 return False
         else:
-            """detail_string = "Items on store# %s:\n" % store.store_num + "\n".join(["%s"] * len(store.items)) %\
-                tuple([i.style_num + " | " + i.UPC for i in store.items.values()])
-            m = WarningDialog("Style %s (UPC %s) on invoice# %s is not allocated to store# %s on PO# %s"\
-                % (item.long_style, item.UPC, inv_num, store.store_num, po_num), detail=detail_string)
-            if m.exec_() == QtWidgets.QMessageBox.Cancel:
-                return False
-            return True"""
             self.w = UPCPOWarningDialog(QtWidgets.QDialog(), item, inv_num, po_num, store)
             self.w.parent.exec_()
             if self.w.confirmed == False:

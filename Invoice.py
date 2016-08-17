@@ -71,7 +71,12 @@ class Invoice(object):
         ship_log.close()
 
     def print_shipping_info(self):
-        return "{}, {}, {}, {}, {}, {}, {}".format(self._tracking_number, self._ship_date, self._address1, self._address2, self._city, self._state, self._zip_code)
+        return "{}, {}, {}, {}, {}, {}, {}".format(self._tracking_number,
+                                                   self._ship_date,
+                                                   self._address1,
+                                                   self._address2,
+                                                   self._city, self._state,
+                                                   self._zip_code)
 
     def get_SSCC(self):
         base_string = 80327620000000000
@@ -83,7 +88,8 @@ class Invoice(object):
                 check_sum += sq_list[num] * 3
             else:
                 check_sum += sq_list[num]
-        sq_string = ''.join(str(num) for num in sq_list) + str(((check_sum + 9) // 10 * 10) - check_sum)
+        sq_string = (''.join(str(num) for num in sq_list)
+                     + str(((check_sum + 9) // 10 * 10) - check_sum))
         self.SSCC = sq_string
 
     def UPC_exception_check(self, config_file):
@@ -108,7 +114,8 @@ class Invoice(object):
         """Checks the PO# of the invoice against the loaded PO database and
         assigns the PO creation date"""
         try:
-            self.po_create_date = po_dict[self.purchase_order_number.lstrip('0')].creation_date
+            self.po_create_date = (
+                po_dict[self.purchase_order_number.lstrip('0')].creation_date)
         except:
             pass
 

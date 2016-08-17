@@ -22,7 +22,7 @@ class PurchaseOrderDB(object):
         po = PurchaseOrder(row['ponum'], row['customer'])
         try:
             po.cancel_ship = datetime.strptime(row['canceldate'], '%Y-%m-%d')
-        except ValueError:
+        except ValueError, EOFError:
             pass
         po.status = row['status']
         try:
@@ -33,7 +33,10 @@ class PurchaseOrderDB(object):
         po.dept = row['dept']
         po.label = row['label']
         po.shipped_cost = row['shippedcost']
-        po.shipped_invs = pickle.loads(row['shippedinvs'])
+        try:
+            po.shipped_invs = pickle.loads(row['shippedinvs'])
+        except (pickle.UnpicklingError, EOFError):
+            pass
         try:
             po.start_ship = datetime.strptime(row['startdate'], '%Y-%m-%d')
         except ValueError:
@@ -209,6 +212,55 @@ class PurchaseOrderDB(object):
                                 print("PO already in DB")
             except FileNotFoundError:
                 print("Could not find file %s" % customer.k_po_in_file)
+<<<<<<< HEAD
+=======
+                
+    def read_export(self, export_path):
+        po_dict = dict()
+        try:
+            with open(export_path, 'r') as export:
+                for line in export:
+                    line = line.rstrip('\n').rstrip('r').split(',')
+                    self._create_po(line, po_dict)
+        except FileNotFoundError:
+            print("Could not find file %s" % export_path)
+        db_list = self.querymany(po_dict.keys())
+
+                    
+    def _create_po(self, line, po_dict):
+        if line[0] != 'T':
+            if line[1].lstrip('0') not in po_dict:
+                po = PurchaseOrder(line[1].lstrip('0'), self.get_customer_from_export(line[0]))
+                print("Creating PO# %s" % po.po_number)
+                po.start_ship = datetime.strptime(line[2], "%m/%d/%Y")
+                po.cancel_ship = datetime.strptime(line[3], "%m/%d/%Y")
+                po.creation_date = datetime.strptime(line[10], "%Y/%m/%d")
+                po.dept = line[11]
+                po_dict[po.po_number] = po
+                self._add_store_to_po(line, po)
+            else:
+                po = po_dict[line[1].lstrip('0')]
+                self._add_store_to_po(line, po)
+            
+    def _add_store_to_po(self, line, po):
+        if line[4] not in po.stores:
+            st = Store(line[4])
+            print("Creating store# %s" % st.store_num)
+            po.stores[st.store_num] = st
+            self._add_item_to_store(line, st)
+        else:
+            st = po.stores[line[4]]
+            self._add_item_to_store(line, st)
+            
+    def _add_item_to_store(self, line, store):
+        if line[5] not in store.items:
+            item = Item(line[5])
+            print("Creating item with UPC #%s" % item.UPC)
+            item.style_num = line[6]
+            item.cost = line[7]
+            item.total_qty = line[9]
+            store.items[item.UPC] = item
+>>>>>>> d2e448885893fdf7bdcced04d6a208b9693da9da
 
     def get_customer_from_export(self, id):
         """
