@@ -22,7 +22,7 @@ class PurchaseOrderDB(object):
         po = PurchaseOrder(row['ponum'], row['customer'])
         try:
             po.cancel_ship = datetime.strptime(row['canceldate'], '%Y-%m-%d')
-        except ValueError, EOFError:
+        except (ValueError, EOFError):
             pass
         po.status = row['status']
         try:
@@ -212,8 +212,6 @@ class PurchaseOrderDB(object):
                                 print("PO already in DB")
             except FileNotFoundError:
                 print("Could not find file %s" % customer.k_po_in_file)
-<<<<<<< HEAD
-=======
                 
     def read_export(self, export_path):
         po_dict = dict()
@@ -260,7 +258,6 @@ class PurchaseOrderDB(object):
             item.cost = line[7]
             item.total_qty = line[9]
             store.items[item.UPC] = item
->>>>>>> d2e448885893fdf7bdcced04d6a208b9693da9da
 
     def get_customer_from_export(self, id):
         """
