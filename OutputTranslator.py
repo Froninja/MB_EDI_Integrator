@@ -3,49 +3,13 @@ from PurchaseOrderDB import PurchaseOrderDB
 from datetime import datetime, date, timedelta
 from PyQt5 import QtWidgets, QtCore
 from WarningDialogs import *
-import time
 import pymssql
-import threading
 import os.path
-import re
-
-class ProgressThread(threading.Thread):
-    def __init__(self, text):
-        threading.Thread.__init__(self)
-        self.p = ProgressDialog(text)
-
-    def start(self):
-        self.p.show()
-
-class ProgressDialog(QtWidgets.QDialog):
-    def __init__(self, text):
-        QtWidgets.QDialog.__init__(self)
-        self.layout = QtWidgets.QVBoxLayout(self)
-        self.header = QtWidgets.QLabel(self)
-        self.header.setText(text)
-        self.header.setAlignment(QtCore.Qt.AlignCenter)
-        self.layout.addWidget(self.header)
-        self.label = QtWidgets.QLabel(self)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.layout.addWidget(self.label)
-        self.progress_bar = QtWidgets.QProgressBar(self)
-        self.progress_bar.setMinimum(0)
-        self.progress_bar.setMaximum(17)
-        self.progress_bar.setTextVisible(False)
-        self.layout.addWidget(self.progress_bar)
-
-    @QtCore.pyqtSlot(str, int)
-    def update_progress(self, text, progress):
-        self.setFocus()
-        self.label.setText(text)
-        self.progress_bar.setValue(progress)
 
 class OutputTranslator(QtCore.QObject):
+    """Single instance class to add requisite information and output for a list
+of invoices
     """
-    Single instance class to add requisite information and output for a list
-    of invoices
-    """
-    progressed = QtCore.pyqtSignal(str, int)
     def __init__(self, customer, settings, append=False, test=False):
         QtCore.QObject.__init__(self)
         self.progress = 0
@@ -55,15 +19,6 @@ class OutputTranslator(QtCore.QObject):
         self.append = append
         self.test = test
         self.get_customer_settings()
-        #if test:
-            #self.p = ProgressDialog("Running Self-Test")
-            #self.thread1 = ProgressThread("Running Self-Test")
-        #else:
-            #self.p = ProgressDialog("Processing")
-            #self.thread1 = ProgressThread("Processing")
-        #self.p.show()
-        #self.progressed.connect(self.thread1.p.update_progress)
-        #self.thread1.start()
 
     def initiate_db(self):
         self.po_db = PurchaseOrderDB(self.settings)
@@ -121,7 +76,6 @@ class OutputTranslator(QtCore.QObject):
         
     def get_ship_data(self):
         print("%s Querying shipping info" % datetime.now())
-        self.progressed.emit("Getting Shipping Info", self.progress)
         for invoice in self.invoice_list:
             invoice.shipping_information(self.settings['shiplog'])
             if invoice.tracking_number == '':
@@ -459,7 +413,6 @@ class OutputTranslator(QtCore.QObject):
             file.write(label_string)
         print("%s Output successful" % datetime.now())
         self.progress += 1
-        self.progressed.emit("Output Complete", self.progress)
 
     def get_output_templates(self):
         with open("OutputTemplates/HeaderTemplate.txt",'r') as header_file:

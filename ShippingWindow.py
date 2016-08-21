@@ -71,7 +71,6 @@ class ShippingWindow(Ui_MainWindow):
         thread1 = ProgressThread("Running Self-Test")
         t = TranslatorUnitTest(self.settings)
         t.o.initiate_db()
-        t.o.progressed.connect(thread1.p.update_progress)
         thread1.start()
         t.run()
         t.test()
