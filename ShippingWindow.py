@@ -55,9 +55,9 @@ class ShippingWindow(Ui_MainWindow):
         self.ShipDate.setDate(QtCore.QDate.currentDate())
         self.parent.setWindowTitle("MB EDI Shipping")
         self.parent.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
-        self.settings = read_config('config.txt')
-        for customer in self.settings['customers']:
-            self.CustomerBox.addItem(customer.a_name)
+        self.settings = read_config('Config.yaml')
+        for customer in self.settings['Customer Settings'].keys():
+            self.CustomerBox.addItem(customer)
         self.actionSettings.triggered.connect(self.open_settings)
         self.actionExecute_Shipments.triggered.connect(self.execute_translator)
         self.EntryExecuteButton.clicked.connect(self.execute_translator)
@@ -98,7 +98,7 @@ class ShippingWindow(Ui_MainWindow):
     def shiplog_lookup(self):
         date = self.ShipDate.date().toString("yyyyMMdd")
         array = []
-        with open(self.settings['shiplog'], 'r') as shiplog:
+        with open(self.settings['File Paths']['Shipping Log'], 'r') as shiplog:
             for line in shiplog:
                 line = line.replace('"','').split(',')
                 if line[0] == date:
@@ -162,46 +162,6 @@ class ShippingWindow(Ui_MainWindow):
         q.exec_()
         self.settings = settings_window.settings
         item_list = [self.CustomerBox.itemText(i) for i in range(self.CustomerBox.count())]
-        for customer in self.settings['customers']:
-            if not customer.a_name in item_list:
-                self.CustomerBox.addItem(customer.a_name)
-
-    def read_config(self, config_file):
-        self.settings = dict()
-        self.settings['customers'] = []
-        with open(config_file, 'r') as config:
-            for line in config:
-                line = line.strip('\n').strip('\n').split(': ')
-                if line[0] == "Shipping Log":
-                    self.settings['shiplog'] = line[1]
-                elif line[0] == "Destination Log":
-                    self.settings['destlog'] = line[1]
-                elif line[0] == "Description Log":
-                    self.settings['desclog'] = line[1]
-                elif line[0] == "UPC Exception Log":
-                    self.settings['upcexceptlog'] = line[1]
-                elif line[0] == "Label Record File":
-                    self.settings['outputlog'] = line[1]
-                elif line[0] == "PO Database File":
-                    self.settings['po_db'] = line[1]
-                elif line[0] == "MAPDATA Path":
-                    self.settings['mapdata'] = line[1]
-                elif line[0] == "Connection String":
-                    self.settings['connstring'] = line[1]
-                elif line[0] == "Invoice Query":
-                    self.settings['invquery'] = line[1]
-                elif line[0] == "Destination Query":
-                    self.settings['destquery'] = line[1]
-                elif line[0] == "Memo Destination Query":
-                    self.settings['memodestquery'] = line[1]
-                elif line[0] == "UPC Query":
-                    self.settings['upcquery'] = line[1]
-                elif line[0] == "Ring UPC Query":
-                    self.settings['ringupcquery'] = line[1]
-                elif line[0] == "Customer":
-                    customer = CustomerSettings()
-                    line = line[1].split('>>')
-                    for index in range(len(customer.sorted_dict())):
-                        if index < len(line):
-                            setattr(customer, customer.sorted_dict()[index], line[index])
-                    self.settings['customers'].append(customer)
+        for customer in self.settings['Customer Settings'].keys():
+            if not customer in item_list:
+                self.CustomerBox.addItem(customer)

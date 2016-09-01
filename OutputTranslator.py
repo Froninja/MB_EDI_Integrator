@@ -41,10 +41,7 @@ of invoices
         return True
 
     def get_customer_settings(self):
-        for customer in self.settings['customers']:
-            if customer.a_name == self.customer:
-                self.customer_settings = customer
-                return
+        self.customer_settings = self.settings['Customer Settings'][self.customer]        
 
     def get_sql_connection(self):
         """
@@ -62,7 +59,7 @@ of invoices
                 invoice.purchase_order_number = row[1]
                 invoice.discount(row[2])
                 invoice.customer = self.customer
-                invoice.get_dept_num(row[3], self.customer_settings.b_asset_dept, self.customer_settings.c_memo_dept)
+                invoice.get_dept_num(row[3], self.customer_settings['Asset Department'], self.customer_settings['Memo Department'])
                 self.invoice_list.append(invoice)
                 print("%s Created Invoice# %s, with PO# %s, Dept# %s, and discount %s" % (datetime.now(),
                                                                                           invoice.invoice_number,
@@ -77,13 +74,13 @@ of invoices
     def get_ship_data(self):
         print("%s Querying shipping info" % datetime.now())
         for invoice in self.invoice_list:
-            invoice.shipping_information(self.settings['shiplog'])
+            invoice.shipping_information(self.settings['File Paths']['Shipping Log'])
             if invoice.tracking_number == '':
                 self.w = TrackingWarningDialog(invoice.invoice_number)
                 self.w.exec_()
                 if self.w.confirmed == True:
                     invoice.tracking_number = self.w.tracking.strip('\n').strip('\r')
-                    invoice.shipping_information_from_tracking(self.settings['shiplog'])
+                    invoice.shipping_information_from_tracking(self.settings['File Paths']['Shipping Log'])
                 else:
                     return False
             invoice.get_SSCC()
@@ -101,13 +98,13 @@ of invoices
         with self.get_sql_connection() as conn:
             with conn.cursor(as_dict=True) as cursor:
                 min_date = date.today() - timedelta(365)
-                sql = self.settings['destquery'].format(','.join(['%s'] * len(self.invoice_list)))
+                sql = self.settings['SQL Settings']['Destination Query'].format(','.join(['%s'] * len(self.invoice_list)))
                 params = [min_date] + [inv.invoice_number for inv in self.invoice_list]
                 cursor.execute(sql, tuple(params))
                 query_dict = dict()
                 for row in cursor:
                     query_dict[str(row['NrDocF'])] = row
-                sql = self.settings['memodestquery'].format(','.join(['%s'] * len(self.invoice_list)))
+                sql = self.settings['SQL Settings']['Memo Destination Query'].format(','.join(['%s'] * len(self.invoice_list)))
                 params = [min_date] + [inv.invoice_number for inv in self.invoice_list]
                 cursor.execute(sql, tuple(params))
                 for row in cursor:
@@ -127,8 +124,9 @@ of invoices
         with self.get_sql_connection() as conn:
             with conn.cursor(as_dict=True) as cursor:
                 min_date = date.today() - timedelta(365)
-                sql = self.settings['invquery'].format(','.join(['%s'] * len(self.invoice_list)))
+                sql = self.settings['SQL Settings']['Invoice Query'].format(','.join(['%s'] * len(self.invoice_list)))
                 params = [min_date] + [inv.invoice_number for inv in self.invoice_list]
+                print(sql)
                 cursor.execute(sql, tuple(params))
                 query_dict = dict()
                 for row in cursor:
@@ -160,11 +158,11 @@ of invoices
             with conn.cursor(as_dict=True) as cursor:
                 query_dict = dict()
                 if len(ring_list) > 0:
-                    cursor.execute(self.settings['ringupcquery'].format(ring_list))
+                    cursor.execute(self.settings['SQL Settings']['Ring UPC Query'].format(ring_list))
                     for row in cursor:
                         query_dict['{}-{}-{}-{}-{}'.format(row['CodMod'], row['Cod'], row['Colore'], row['Sup'], str(row['Inch']))] = row
                 if len(non_ring_list) > 0:
-                    cursor.execute(self.settings['upcquery'].format(non_ring_list))
+                    cursor.execute(self.settings['SQL Settings']['UPC Query'].format(non_ring_list))
                     for row in cursor:
                         query_dict['{}-{}-{}-{}-{}'.format(row['CodMod'], row['Cod'], row['Colore'], row['Sup'], str(row['Lgh']))] = row
         print("%s Successfully queried %s UPCs" % (datetime.now(), len(query_dict)))
@@ -184,7 +182,7 @@ of invoices
                 item = Product('{}-{}-{}-{}-{}'.format(row['codmod'], row['codpiet'], row['colore'], row['codsup'], str(row['lungh'])))
                 item.qty_each = row['qtamov']
                 item.unit_cost = row['valorev']/item.qty_each
-                if self.customer_settings.d_desc_needed == 'True':
+                if self.customer_settings['Description Required'] == 'True':
                     item = self.get_descriptions(item, invoice)
                 invoice.add_item(item)
         print("%s Items assigned" % datetime.now())
@@ -197,7 +195,7 @@ of invoices
         is not found in the file, requests descriptions from the user and
         adds them to the file
         """
-        with open(self.settings['desclog'], 'r') as desc_log:
+        with open(self.settings['File Paths']['Description Log'], 'r') as desc_log:
             for line in desc_log:
                 line = line.rstrip('\n').split(',')
                 if line[0] == item.long_style:
@@ -211,7 +209,7 @@ of invoices
                 item.description = self.w.description
                 item.size = self.w.size
                 item.color = self.w.color
-                with open(self.settings['desclog'], 'a') as desc_log:
+                with open(self.settings['File Paths']['Description Log'], 'a') as desc_log:
                     desc_log.write("%s,%s,%s,%s\n" % (item.long_style, item.description,
                                                       item.size, item.color))
         return item
@@ -227,7 +225,7 @@ of invoices
         query = self.get_destinations()
         for invoice in self.invoice_list:
             mb_dest = query[invoice.invoice_number]['DestinazioneCliente']
-            with open(self.settings['destlog'], 'r') as dest_log:
+            with open(self.settings['File Paths']['Destination Log'], 'r') as dest_log:
                 for line in dest_log:
                     line = line.split(',')
                     if line[0] == invoice.customer and line[1] == str(mb_dest):
@@ -241,7 +239,7 @@ of invoices
                     invoice.store_number = self.w.store_num
                     invoice.store_name = self.w.store_name
                     invoice.distribution_center = self.w.dc_num
-                    with open(self.settings['destlog'], 'a') as dest_log:
+                    with open(self.settings['File Paths']['Destination Log'], 'a') as dest_log:
                         dest_log.write("%s,%s,%s,%s,%s\n" % (invoice.customer, mb_dest, invoice.store_number,
                                                              invoice.distribution_center, invoice.store_name))
                 else:
@@ -257,9 +255,9 @@ of invoices
             for item in invoice.items:
                 try:
                     item.UPC = query[item.long_style]['BarCode']
-                    item.UPC_exception_check(self.settings['upcexceptlog'], invoice.customer)
+                    item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'], invoice.customer)
                 except KeyError:
-                    item.UPC_exception_check(self.settings['upcexceptlog'], invoice.customer)
+                    item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'], invoice.customer)
                 if item.UPC == '' or item.UPC == None:
                     self.w = UPCWarningDialog(item.long_style, invoice.invoice_number)
                     self.w.exec_()
@@ -267,7 +265,7 @@ of invoices
                         item.UPC = self.w.UPC.strip('\r').strip('\n')
                     else:
                         return False
-                item.UPC_exception_check(self.settings['upcexceptlog'], invoice.customer)
+                item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'], invoice.customer)
         print("%s UPCs assigned" % datetime.now())
         self.progress += 1
         return True
@@ -380,8 +378,8 @@ of invoices
             #self.p.close()
 
     def check_for_existing_file(self):
-        if os.path.isfile(self.settings['mapdata'] + self.customer_settings.j_ship_out_file)\
-            or os.path.isfile(self.settings['mapdata'] + self.customer_settings.i_inv_out_file):
+        if os.path.isfile(self.settings['File Paths']['MAPDATA Path'] + self.customer_settings['ASN File'])\
+            or os.path.isfile(self.settings['File Paths']['MAPDATA Path'] + self.customer_settings['Invoice File']):
             return True
         else:
             return False
@@ -405,11 +403,11 @@ of invoices
             output_string += self.output_inv_string(inv_temp, invoice)
             for item in invoice.items:
                 output_string += self.output_item_string(item_temp, item)
-        with open(self.settings['mapdata'] + self.customer_settings.j_ship_out_file, mode) as file:
+        with open(self.settings['File Paths']['MAPDATA Path'] + self.customer_settings['ASN File'], mode) as file:
             file.write(output_string)
-        with open(self.settings['mapdata'] + self.customer_settings.i_inv_out_file, mode) as file:
+        with open(self.settings['File Paths']['MAPDATA Path'] + self.customer_settings['Invoice File'], mode) as file:
             file.write(output_string)
-        with open(self.settings['outputlog'],'a') as file:
+        with open(self.settings['File Paths']['Label Record File'],'a') as file:
             file.write(label_string)
         print("%s Output successful" % datetime.now())
         self.progress += 1

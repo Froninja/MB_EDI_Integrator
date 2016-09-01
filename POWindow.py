@@ -28,10 +28,10 @@ class POWindow(Ui_MainWindow):
         self.setupUi(self.parent)
         main_window.setWindowTitle("MB EDI Purchase Orders")
         main_window.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
-        self.settings = read_config('config.txt')
+        self.settings = read_config('Config.yaml')
         self.create_filter_boxes()
-        for customer in self.settings['customers']:
-            self.CustomerBox.addItem(customer.a_name)
+        for customer in self.settings['Customer Settings'].keys():
+            self.CustomerBox.addItem(customer)
         self.actionSettings.triggered.connect(self.open_settings)
         self.actionExport_as_Spreadsheet.triggered.connect(self.export_for_ss)
         self.actionView_Distro.triggered.connect(self.open_po_table_view)
@@ -58,7 +58,7 @@ class POWindow(Ui_MainWindow):
 
     def create_filter_boxes(self):
         self.status_boxes = []
-        for status in self.settings['status']:
+        for status in self.settings['Statuses']:
             c = QtWidgets.QCheckBox(status, self.FilterFrame)
             c.clicked.connect(self.po_list_filter)
             self.FilterFrame.layout().addWidget(c)
@@ -68,7 +68,7 @@ class POWindow(Ui_MainWindow):
         for row in range(self.POTable.model().rowCount()):
             i = self.POTable.model().index(row, 3)
             c = TableComboBox(self.POTable.model(), i)
-            options = [''] + self.settings['status']
+            options = [''] + self.settings['Statuses']
             c.addItems(options)
             try:
                 c.setCurrentIndex(options.index(self.POTable.model().po_list[i.row()].status))
@@ -85,7 +85,7 @@ class POWindow(Ui_MainWindow):
         status = []
         for num in range(len(self.status_boxes)):
             if self.status_boxes[num].isChecked() == True:
-                status.append(self.settings['status'][num])
+                status.append(self.settings['Statuses'][num])
         self.po_model.po_list = self.po_db.queryfilters(customer, tdiff, status)
         self.po_model.resetInternalData()
         self.POTable.model().modelReset.emit()
@@ -122,9 +122,9 @@ class POWindow(Ui_MainWindow):
         q.exec_()
         self.settings = settings_window.settings
         item_list = [self.CustomerBox.itemText(i) for i in range(self.CustomerBox.count())]
-        for customer in self.settings['customers']:
-            if not customer.a_name in item_list:
-                self.CustomerBox.addItem(customer.a_name)
+        for customer in self.settings['Customer Settings'].keys():
+            if not customer in item_list:
+                self.CustomerBox.addItem(customer)
 
     def print_po(self):
         po = self.POTable.model().po_list[self.POTable.selectedIndexes()[0].row()]

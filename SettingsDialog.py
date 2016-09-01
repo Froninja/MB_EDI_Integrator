@@ -2,13 +2,14 @@ from UiSettingsDialog import Ui_SettingsDialog
 from CustomerSettings import CustomerSettings
 from UiCustomerAddDialog import Ui_CustomerAddDialog
 from PyQt5 import QtCore, QtWidgets, QtGui
+import yaml
 
 class CustomerModel(QtCore.QAbstractTableModel):
     def __init__(self, customer_list, parent, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
-        self.customers = customer_list
+        self.customers = list(customer_list.values())
         self.view_attr = ['name', 'inv_edi_id', 'ship_edi_id']
-        self.headers = CustomerSettings().sorted_dict()
+        self.headers = list(self.customers[0].keys())
 
     def flags(self, index):
         return QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable
@@ -21,7 +22,7 @@ class CustomerModel(QtCore.QAbstractTableModel):
 
     def headerData(self, section, Orientation, role = QtCore.Qt.DisplayRole):
         if role == QtCore.Qt.DisplayRole and Orientation == QtCore.Qt.Horizontal:
-            return self.headers[section][2:].replace('_',' ').title()
+            return self.headers[section]
         return QtCore.QAbstractTableModel.headerData(self, section, Orientation, role)
 
     def data(self, index, role = QtCore.Qt.DisplayRole):
@@ -30,11 +31,11 @@ class CustomerModel(QtCore.QAbstractTableModel):
         elif role != QtCore.Qt.DisplayRole:
             return QtCore.QVariant()
         else:
-            return QtCore.QVariant(getattr(self.customers[index.row()], CustomerSettings().sorted_dict()[index.column()]))
+            return QtCore.QVariant(self.customers[index.row()][self.headers[index.column()]])
 
     def setData(self, index, data, role = QtCore.Qt.EditRole):
         if index.isValid():
-            setattr(self.customers[index.row()], CustomerSettings().sorted_dict()[index.column()], data)
+            self.customers[index.row()][self.headers[index.column()]] = data
             return True
         else:
             return False
@@ -50,57 +51,34 @@ class SettingsDialog(Ui_SettingsDialog):
         self.AddCustomerButton.clicked.connect(self.add_new_clicked)
         self.DeleteCustomerButton.clicked.connect(self.delete_clicked)
         self.settings = settings
-        self.model = CustomerModel(self.settings['customers'], self.parent)
+        self.model = CustomerModel(self.settings['Customer Settings'], self.parent)
         self.CustomerTable.setModel(self.model)
         self.populate_fields()
         self.populate_list()
 
     def write_config(self, config_file):
-        output = ''
         with open(config_file, 'w') as config:
-            output += "Required File Paths:\n"
-            output += "Shipping Log: %s\n" % self.settings['shiplog']
-            output += "Destination Log: %s\n" % self.settings['destlog']
-            output += "Description Log: %s\n" % self.settings['desclog']
-            output += "UPC Exception Log: %s\n" % self.settings['upcexceptlog']
-            output += "Label Record File: %s\n" % self.settings['outputlog']
-            output += "MAPDATA Path: %s\n" % self.settings['mapdata']
-            output += "PO Database File: %s\n" % self.settings['po_db']
-            output += "\nSQL Settings:\n"
-            output += "Connection String: %s\n" % self.settings['connstring']
-            output += "Invoice Query: %s\n" % self.settings['invquery']
-            output += "Destination Query: %s\n" % self.settings['destquery']
-            output += "Memo Destination Query: %s\n" % self.settings['memodestquery']
-            output += "UPC Query: %s\n" % self.settings['upcquery']
-            output += "Ring UPC Query: %s\n" % self.settings['ringupcquery']
-            output += "\nStatus Options: %s" % ','.join(self.settings['status'])
-            output += "\nCustomer Settings:\n"
-            for customer in self.settings['customers']:
-                output += "Customer: "
-                for setting in customer.sorted_dict():
-                    output += "%s>>" % getattr(customer, setting)
-                output += "\n"
-            config.write(output)
+            yaml.dump(self.settings, config, default_flow_style=False)
 
     def populate_fields(self):
-        self.ShipLogLine.setText(self.settings['shiplog'])
-        self.DestLogLine.setText(self.settings['destlog'])
-        self.DescLogLine.setText(self.settings['desclog'])
-        self.UPCExceptLine.setText(self.settings['upcexceptlog'])
-        self.LabelRecordLine.setText(self.settings['outputlog'])
-        self.MapdataLine.setText(self.settings['mapdata'])
-        self.POdataLine.setText(self.settings['po_db'])
-        self.ConnLine.setText(self.settings['connstring'])
-        self.InvQueryLine.setText(self.settings['invquery'])
-        self.DestQueryLine.setText(self.settings['destquery'])
-        self.MemDestQueryLine.setText(self.settings['memodestquery'])
-        self.UPCQueryLine.setText(self.settings['upcquery'])
-        self.RingUPCQueryLine.setText(self.settings['ringupcquery'])
+        self.ShipLogLine.setText(self.settings['File Paths']['Shipping Log'])
+        self.DestLogLine.setText(self.settings['File Paths']['Destination Log'])
+        self.DescLogLine.setText(self.settings['File Paths']['Description Log'])
+        self.UPCExceptLine.setText(self.settings['File Paths']['UPC Exception Log'])
+        self.LabelRecordLine.setText(self.settings['File Paths']['Label Record File'])
+        self.MapdataLine.setText(self.settings['File Paths']['MAPDATA Path'])
+        self.POdataLine.setText(self.settings['File Paths']['PO Database File'])
+        self.ConnLine.setText(self.settings['SQL Settings']['Connection String'])
+        self.InvQueryLine.setText(self.settings['SQL Settings']['Invoice Query'])
+        self.DestQueryLine.setText(self.settings['SQL Settings']['Destination Query'])
+        self.MemDestQueryLine.setText(self.settings['SQL Settings']['Memo Destination Query'])
+        self.UPCQueryLine.setText(self.settings['SQL Settings']['UPC Query'])
+        self.RingUPCQueryLine.setText(self.settings['SQL Settings']['Ring UPC Query'])
 
     def populate_list(self):
-        self.StatusList.setRowCount(len(self.settings['status']) + 5)
-        for num in range(len(self.settings['status'])):
-            self.StatusList.setItem(num, 0, QtWidgets.QTableWidgetItem(self.settings['status'][num]))
+        self.StatusList.setRowCount(len(self.settings['Statuses']) + 5)
+        for num in range(len(self.settings['Statuses'])):
+            self.StatusList.setItem(num, 0, QtWidgets.QTableWidgetItem(self.settings['Statuses'][num]))
 
     def add_new_clicked(self):
         q = QtWidgets.QDialog()
@@ -108,33 +86,33 @@ class SettingsDialog(Ui_SettingsDialog):
         add_window.setupUi(q)
         q.exec_()
         if add_window.confirmed == True and add_window.customer != '':
-            self.settings['customers'].append(add_window.customer)
+            self.settings['Customer Settings'].append(add_window.customer)
             self.CustomerTable.model().layoutChanged.emit()
 
     def delete_clicked(self):
-        self.settings['customers'].remove(self.CustomerTable.model().customers[self.CustomerTable.selectedIndexes()[0].row()])        
+        self.settings['Customer Settings'].remove(self.CustomerTable.model().customers[self.CustomerTable.selectedIndexes()[0].row()])        
         self.CustomerTable.model().layoutChanged.emit()
         
     def accept_clicked(self):
-        self.settings['shiplog'] = self.ShipLogLine.text()
-        self.settings['destlog'] = self.DestLogLine.text()
-        self.settings['desclog'] = self.DescLogLine.text()
-        self.settings['upcexceptlog'] = self.UPCExceptLine.text()
-        self.settings['outputlog'] = self.LabelRecordLine.text()
-        self.settings['mapdata'] = self.MapdataLine.text()
-        self.settings['po_db'] = self.POdataLine.text()
-        self.settings['connstring'] = self.ConnLine.text()
-        self.settings['invquery'] = self.InvQueryLine.text()
-        self.settings['destquery'] = self.DestQueryLine.text()
-        self.settings['memodestquery'] = self.MemDestQueryLine.text()
-        self.settings['upcquery'] = self.UPCQueryLine.text()
-        self.settings['ringupcquery'] = self.RingUPCQueryLine.text()
-        self.settings['customers'] = self.CustomerTable.model().customers
+        self.settings['File Paths']['Shipping Log'] = self.ShipLogLine.text()
+        self.settings['File Paths']['Destination Log'] = self.DestLogLine.text()
+        self.settings['File Paths']['Description Log'] = self.DescLogLine.text()
+        self.settings['File Paths']['UPC Exception Log'] = self.UPCExceptLine.text()
+        self.settings['File Paths']['Label Record File'] = self.LabelRecordLine.text()
+        self.settings['File Paths']['MAPDATA Path'] = self.MapdataLine.text()
+        self.settings['File Paths']['PO Database File'] = self.POdataLine.text()
+        self.settings['SQL Settings']['Connection String'] = self.ConnLine.text()
+        self.settings['SQL Settings']['Invoice Query'] = self.InvQueryLine.text()
+        self.settings['SQL Settings']['Destination Query'] = self.DestQueryLine.text()
+        self.settings['SQL Settings']['Memo Destination Query'] = self.MemDestQueryLine.text()
+        self.settings['SQL Settings']['UPC Query'] = self.UPCQueryLine.text()
+        self.settings['SQL Settings']['Ring UPC Query'] = self.RingUPCQueryLine.text()
+        self.settings['SQL Settings']['CustomerSettings'] = self.CustomerTable.model().customers
         self.settings['status'] = []
         for num in range(self.StatusList.rowCount()):
             if self.StatusList.item(num, 0) != None:
-                self.settings['status'].append(self.StatusList.item(num, 0).text())
-        self.write_config('Config.txt')
+                self.settings['Statuses'].append(self.StatusList.item(num, 0).text())
+        self.write_config('Config.yaml')
         self.parent.close()
     
     def cancel_clicked(self):

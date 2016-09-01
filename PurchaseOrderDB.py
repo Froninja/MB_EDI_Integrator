@@ -11,7 +11,7 @@ class PurchaseOrderDB(object):
     """
     def __init__(self, settings):
         self.settings = settings
-        self.db = sqlite3.connect(self.settings['po_db'], detect_types=sqlite3.PARSE_DECLTYPES)
+        self.db = sqlite3.connect(self.settings['File Paths']['PO Database File'], detect_types=sqlite3.PARSE_DECLTYPES)
         self.db.row_factory = sqlite3.Row        
 
     def make_po(self, row, cursor):
@@ -186,10 +186,10 @@ class PurchaseOrderDB(object):
         Searches the export files provided by customer settings and adds the
         PurchaseOrders to the DB
         """
-        for customer in self.settings['customers']:
-            print("Customer: %s" % customer.a_name)
+        for customer in self.settings['CustomerSettings']:
+            print("Customer: %s" % customer['Name'])
             try:
-                with open(customer.k_po_in_file, 'r') as export:
+                with open(self.settings['FilePaths']['PO Export File'], 'r') as export:
                     for line in export:
                         line = line.rstrip('\n').rstrip('\r').split(',')
                         print(line)
@@ -265,13 +265,13 @@ class PurchaseOrderDB(object):
         export file
         """
         print("ID from file: %s" % id.lstrip('0'))
-        for customer in self.settings['customers']:
-            if id.lstrip('0') == str(customer.l_po_edi_id):
+        for customer in self.settings['CustomerSettings']:
+            if id.lstrip('0') == str(customer['Attributes']['PO ID']):
                 print("Found a match")
-                return customer.a_name
-            if id.lstrip() == customer.f_inv_edi_id:
+                return customer['Name']
+            if id.lstrip() == customer['Attributes']['Invoice ID']:
                 print("Found a match")
-                return customer.a_name
+                return customer['Name']
         return False
 
     def fix_dates(self):
