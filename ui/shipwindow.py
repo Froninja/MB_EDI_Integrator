@@ -1,13 +1,12 @@
-from UiShippingWindow import Ui_MainWindow
-from SettingsDialog import SettingsDialog
-from CustomerSettings import CustomerSettings
-from PurchaseOrderDB import PurchaseOrderDB
-from OutputTranslator import OutputTranslator
-from ReadConfig import read_config
+from ui.pyuic.UiShippingWindow import Ui_MainWindow
+from ui.settingsdialog import SettingsDialog
+from db.podb import PurchaseOrderDB
+from translate.translator import OutputTranslator
+from translate.translatetest import TranslatorUnitTest
+from helpers.config import read_config
+from helpers.analysis import ship_log_analyzer
 from PyQt5 import QtCore, QtWidgets, QtGui
 from datetime import datetime, timedelta
-from TranslatorUnitTest import TranslatorUnitTest
-from ShipLogAnalyzer import ship_log_analyzer
 import threading
 import re
 

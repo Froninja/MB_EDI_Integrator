@@ -1,4 +1,3 @@
-from CustomerSettings import CustomerSettings
 import yaml
 
 def read_config(config_file):

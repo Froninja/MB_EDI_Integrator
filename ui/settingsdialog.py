@@ -1,6 +1,5 @@
-from UiSettingsDialog import Ui_SettingsDialog
-from CustomerSettings import CustomerSettings
-from UiCustomerAddDialog import Ui_CustomerAddDialog
+from ui.pyuic.UiSettingsDialog import Ui_SettingsDialog
+from ui.pyuic.UiCustomerAddDialog import Ui_CustomerAddDialog
 from PyQt5 import QtCore, QtWidgets, QtGui
 import yaml
 
@@ -83,14 +82,15 @@ class SettingsDialog(Ui_SettingsDialog):
     def add_new_clicked(self):
         q = QtWidgets.QDialog()
         add_window = Ui_CustomerAddDialog()
-        add_window.setupUi(q)
+        add_window.setupUi(q, list(self.settings["Customer Settings"].values())[0])
         q.exec_()
         if add_window.confirmed == True and add_window.customer != '':
-            self.settings['Customer Settings'].append(add_window.customer)
+            self.settings['Customer Settings'][add_window.customer["Name"]] = add_window.customer
             self.CustomerTable.model().layoutChanged.emit()
 
     def delete_clicked(self):
-        self.settings['Customer Settings'].remove(self.CustomerTable.model().customers[self.CustomerTable.selectedIndexes()[0].row()])        
+        del self.settings['Customer Settings'][self.CustomerTable.model().customers[self.CustomerTable.selectedIndexes()[0].row()]]
+        #self.settings['Customer Settings'].pop(self.CustomerTable.model().customers[self.CustomerTable.selectedIndexes()[0].row()])        
         self.CustomerTable.model().layoutChanged.emit()
         
     def accept_clicked(self):
@@ -108,7 +108,7 @@ class SettingsDialog(Ui_SettingsDialog):
         self.settings['SQL Settings']['UPC Query'] = self.UPCQueryLine.text()
         self.settings['SQL Settings']['Ring UPC Query'] = self.RingUPCQueryLine.text()
         self.settings['SQL Settings']['CustomerSettings'] = self.CustomerTable.model().customers
-        self.settings['status'] = []
+        self.settings['Statuses'] = []
         for num in range(self.StatusList.rowCount()):
             if self.StatusList.item(num, 0) != None:
                 self.settings['Statuses'].append(self.StatusList.item(num, 0).text())

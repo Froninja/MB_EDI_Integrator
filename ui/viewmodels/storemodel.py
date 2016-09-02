@@ -1,4 +1,4 @@
-from PurchaseOrder import PurchaseOrder, Store, Item
+from models.purchaseorder import PurchaseOrder, Store, Item
 from PyQt5 import QtCore, QtWidgets
 
 class TreeNode(object):

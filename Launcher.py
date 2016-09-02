@@ -1,6 +1,6 @@
-from LauncherDialog import Ui_Launcher
-from POWindow import POWindow
-from ShippingWindow import ShippingWindow
+from ui.pyuic.UiLauncherDialog import Ui_Launcher
+from ui.powindow import POWindow
+from ui.shipwindow import ShippingWindow
 from PyQt5 import QtWidgets, QtGui
 from contextlib import redirect_stdout
 import sys

@@ -1,6 +1,6 @@
-from UiStoreViewWindow import Ui_StoreViewWindow
-from StoreModel import StoreModel
-from Exporter import Exporter
+from ui.pyuic.UiStoreViewWindow import Ui_StoreViewWindow
+from ui.viewmodels.storemodel import StoreModel
+from helpers.export import Exporter
 from PyQt5 import QtGui
 
 class StoreViewWindow(Ui_StoreViewWindow):

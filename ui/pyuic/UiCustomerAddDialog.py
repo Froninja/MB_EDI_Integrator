@@ -1,20 +1,20 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from CustomerSettings import CustomerSettings
 import sys
 
 class Ui_CustomerAddDialog(object):
-    def setupUi(self, CustomerAddDialog):
+    def setupUi(self, CustomerAddDialog, sample_cust):
         CustomerAddDialog.setObjectName("CustomerAddDialog")
         self.parent = CustomerAddDialog
         self.parent.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.sample_cust = sample_cust
         self.confirmed = False
         self.gridLayout = QtWidgets.QGridLayout(CustomerAddDialog)
         self.gridLayout.setObjectName("gridLayout")
         index = 0
-        for setting in CustomerSettings().sorted_dict():
+        for setting in sample_cust.keys():
             self.label = QtWidgets.QLabel(CustomerAddDialog)
             self.label.setObjectName(setting + "_label")
-            self.label.setText(setting[2:].replace('_',' ').title())
+            self.label.setText(setting)
             self.gridLayout.addWidget(self.label, index, 0, 1, 1)
             self.line = QtWidgets.QLineEdit(CustomerAddDialog)
             self.line.setObjectName(setting + "_line")
@@ -33,9 +33,9 @@ class Ui_CustomerAddDialog(object):
         CustomerAddDialog.setWindowTitle("Add New Customer")
 
     def confirm_clicked(self):
-        self.customer = CustomerSettings()
-        for setting in self.customer.sorted_dict():
-            setattr(self.customer, setting, self.parent.findChild(QtWidgets.QLineEdit, setting + "_line").text())
+        self.customer = dict()
+        for setting in self.sample_cust.keys():
+            self.customer[setting] = self.parent.findChild(QtWidgets.QLineEdit, setting + "_line").text()
         self.confirmed = True
         self.parent.close()
 

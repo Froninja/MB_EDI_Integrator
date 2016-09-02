@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui
-from UiUPCWarningDialog import Ui_Dialog
-from PurchaseOrder import *
-from Invoice import *
+from ui.pyuic.UiUPCWarningDialog import Ui_Dialog
+from models.purchaseorder import PurchaseOrder, Store
+from models.invoice import Invoice, Product
 import sys
 
 class WarningDialog(QtWidgets.QMessageBox):

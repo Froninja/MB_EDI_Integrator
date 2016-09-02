@@ -1,12 +1,11 @@
-from POWindowUI import Ui_MainWindow
-from SettingsDialog import SettingsDialog
-from StoreViewWindow import StoreViewWindow
-from CustomerSettings import CustomerSettings
-from PurchaseOrderDB import PurchaseOrderDB
-from POModel import POModel
-from POPrintView import Ui_POPrintView
-from Exporter import Exporter
-from ReadConfig import read_config
+from ui.pyuic.UiPOWindow import Ui_MainWindow
+from ui.settingsdialog import SettingsDialog
+from ui.storeview import StoreViewWindow
+from db.podb import PurchaseOrderDB
+from ui.viewmodels.pomodel import POModel
+from ui.viewmodels.poprinter import Ui_POPrintView
+from helpers.export import Exporter
+from helpers.config import read_config
 from PyQt5 import QtCore, QtWidgets, QtGui, QtPrintSupport
 from datetime import datetime, timedelta
 from contextlib import redirect_stdout

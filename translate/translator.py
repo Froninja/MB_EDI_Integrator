@@ -1,8 +1,8 @@
-from Invoice import Invoice, Product
-from PurchaseOrderDB import PurchaseOrderDB
+from models.invoice import Invoice, Product
+from db.podb import PurchaseOrderDB
 from datetime import datetime, date, timedelta
 from PyQt5 import QtWidgets, QtCore
-from WarningDialogs import *
+from ui.warnings import *
 import pymssql
 import os.path
 

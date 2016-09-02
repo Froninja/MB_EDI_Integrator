@@ -1,7 +1,7 @@
 import sqlite3
 import pickle
 from datetime import datetime, timedelta, date
-from PurchaseOrder import PurchaseOrder, Store, Item
+from models.purchaseorder import PurchaseOrder, Store, Item
 
 class PurchaseOrderDB(object):
     """
@@ -33,10 +33,10 @@ class PurchaseOrderDB(object):
         po.dept = row['dept']
         po.label = row['label']
         po.shipped_cost = row['shippedcost']
-        try:
-            po.shipped_invs = pickle.loads(row['shippedinvs'])
-        except (pickle.UnpicklingError, EOFError):
-            pass
+        #try:
+            #po.shipped_invs = pickle.loads(row['shippedinvs'])
+        #except (pickle.UnpicklingError, EOFError):
+            #pass
         try:
             po.start_ship = datetime.strptime(row['startdate'], '%Y-%m-%d')
         except ValueError:
