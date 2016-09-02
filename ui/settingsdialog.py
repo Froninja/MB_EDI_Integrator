@@ -89,8 +89,10 @@ class SettingsDialog(Ui_SettingsDialog):
             self.CustomerTable.model().layoutChanged.emit()
 
     def delete_clicked(self):
-        del self.settings['Customer Settings'][self.CustomerTable.model().customers[self.CustomerTable.selectedIndexes()[0].row()]]
-        #self.settings['Customer Settings'].pop(self.CustomerTable.model().customers[self.CustomerTable.selectedIndexes()[0].row()])        
+        print(self.settings['Customer Settings'])
+        print(self.CustomerTable.model().customers)
+        print(self.CustomerTable.selectedIndexes()[0].row())
+        del self.settings['Customer Settings'][self.CustomerTable.model().customers[self.CustomerTable.selectedIndexes()[0].row()]['Name']]   
         self.CustomerTable.model().layoutChanged.emit()
         
     def accept_clicked(self):
