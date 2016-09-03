@@ -55,7 +55,7 @@ class ShippingWindow(Ui_MainWindow):
         self.parent.setWindowTitle("MB EDI Shipping")
         self.parent.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
         self.settings = read_config('Config.yaml')
-        for customer in self.settings['Customer Settings'].keys():
+        for customer in sorted(list(self.settings['Customer Settings'].keys())):
             self.CustomerBox.addItem(customer)
         self.actionSettings.triggered.connect(self.open_settings)
         self.actionExecute_Shipments.triggered.connect(self.execute_translator)

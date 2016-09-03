@@ -6,7 +6,7 @@ import yaml
 class CustomerModel(QtCore.QAbstractTableModel):
     def __init__(self, customer_list, parent, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
-        self.customers = list(customer_list.values())
+        self.customers = sorted(list(customer_list.values()), key=lambda c: c['Name'])
         self.view_attr = ['name', 'inv_edi_id', 'ship_edi_id']
         self.headers = list(self.customers[0].keys())
 

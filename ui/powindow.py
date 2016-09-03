@@ -29,7 +29,7 @@ class POWindow(Ui_MainWindow):
         main_window.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
         self.settings = read_config('Config.yaml')
         self.create_filter_boxes()
-        for customer in self.settings['Customer Settings'].keys():
+        for customer in sorted(list(self.settings['Customer Settings'].keys())):
             self.CustomerBox.addItem(customer)
         self.actionSettings.triggered.connect(self.open_settings)
         self.actionExport_as_Spreadsheet.triggered.connect(self.export_for_ss)
