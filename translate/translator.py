@@ -126,7 +126,6 @@ of invoices
                 min_date = date.today() - timedelta(365)
                 sql = self.settings['SQL Settings']['Invoice Query'].format(','.join(['%s'] * len(self.invoice_list)))
                 params = [min_date] + [inv.invoice_number for inv in self.invoice_list]
-                print(sql)
                 cursor.execute(sql, tuple(params))
                 query_dict = dict()
                 for row in cursor:
