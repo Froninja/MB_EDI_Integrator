@@ -1,7 +1,0 @@
--Add retail value to POs
--COMPLETE Manual flags on POs: ordered, shipped, etc
--COMPLETE Output todays date to label file instead of ship date
--COMPLETE Update name and icon on PO detail views
--COMPLETE BUG: Shipped cost does not account for qty more than 1 per style
--COMPLETE BUG: Printing defaults to PDF
--COMPLETE Compile multiple lines of a style/invoice to one style
