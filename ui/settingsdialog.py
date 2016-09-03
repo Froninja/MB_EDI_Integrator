@@ -85,14 +85,11 @@ class SettingsDialog(Ui_SettingsDialog):
         add_window.setupUi(q, list(self.settings["Customer Settings"].values())[0])
         q.exec_()
         if add_window.confirmed == True and add_window.customer != '':
-            self.settings['Customer Settings'][add_window.customer["Name"]] = add_window.customer
+            self.CustomerTable.model().customers.append(add_window.customer)
             self.CustomerTable.model().layoutChanged.emit()
 
     def delete_clicked(self):
-        print(self.settings['Customer Settings'])
-        print(self.CustomerTable.model().customers)
-        print(self.CustomerTable.selectedIndexes()[0].row())
-        del self.settings['Customer Settings'][self.CustomerTable.model().customers[self.CustomerTable.selectedIndexes()[0].row()]['Name']]   
+        self.CustomerTable.model().customers.pop(self.CustomerTable.selectedIndexes()[0].row())
         self.CustomerTable.model().layoutChanged.emit()
         
     def accept_clicked(self):
@@ -109,7 +106,7 @@ class SettingsDialog(Ui_SettingsDialog):
         self.settings['SQL Settings']['Memo Destination Query'] = self.MemDestQueryLine.text()
         self.settings['SQL Settings']['UPC Query'] = self.UPCQueryLine.text()
         self.settings['SQL Settings']['Ring UPC Query'] = self.RingUPCQueryLine.text()
-        self.settings['SQL Settings']['CustomerSettings'] = self.CustomerTable.model().customers
+        self.settings['Customer Settings'] = {c['Name']: c for c in self.CustomerTable.model().customers}
         self.settings['Statuses'] = []
         for num in range(self.StatusList.rowCount()):
             if self.StatusList.item(num, 0) != None:

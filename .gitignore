@@ -52,3 +52,7 @@ MB_EDI_Integrator.sln
 MB_EDI_Integrator.pyproj
 *.pyc
 *.csv
+/Config.json
+/Config.yaml
+/PO_Database
+/bin/PO_Database
