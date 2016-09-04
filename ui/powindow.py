@@ -177,8 +177,8 @@ class POPrinter(QtCore.QObject):
 
         cursor.insertBlock(info_block)
         cursor.setCharFormat(info_text)
-        cursor.insertText("Start Ship Date: %s\tCancel Date: %s" % (self.po.start_ship.strftime("%m/%d/%Y")
-                                                                      , self.po.cancel_ship.strftime("%m/%d/%Y")))
+        cursor.insertText("Start Ship Date: %s\tCancel Date: %s" % (self.po.start_ship.strftime("%m/%d/%Y"),
+                                                                    self.po.cancel_ship.strftime("%m/%d/%Y")))
         cursor.movePosition(QtGui.QTextCursor.NextBlock)
 
         cursor.insertBlock(info_block)
@@ -191,11 +191,11 @@ class POPrinter(QtCore.QObject):
             cursor.insertBlock(style_block)
             cursor.setCharFormat(style_text)
             cursor.insertText("Store#: %s\tTotal Cost Value: $%s\t Total Qty: %s\n" % (store.store_num,
-                                                                                     sum([item.cost * item.total_qty for item in store.items.values()]),
-                                                                                     sum([item.total_qty for item in store.items.values()])))
+                                                                                       sum([item.cost * item.total_qty for item in store.items.values()]),
+                                                                                       sum([item.total_qty for item in store.items.values()])))
             cursor.insertText("Items\n")
             for item in sorted(store.items.values(), key=lambda item: item.style_num):
                 cursor.insertText("Style: %s\tUPC: %s\tUnit Cost: $%s\tQty: %s\n" % (item.style_num, item.UPC,
-                                                                                   item.cost, item.total_qty))
+                                                                                     item.cost, item.total_qty))
 
         document.print_(printer)

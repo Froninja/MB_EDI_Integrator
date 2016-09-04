@@ -204,15 +204,15 @@ of invoices
         if item.description == '':
             self.w = DescriptionWarningDialog(item.UPC, item.long_style, inv.invoice_number)
             self.w.exec_()
-            if self.w.confirmed == True:
+            if self.w.confirmed is True:
                 item.description = self.w.description
                 item.size = self.w.size
                 item.color = self.w.color
                 with open(self.settings['File Paths']['Description Log'], 'a') as desc_log:
                     desc_log.write("%s,%s,%s,%s\n" % (item.long_style, item.description,
                                                       item.size, item.color))
-        return item
         print("%s Descriptions assigned" % datetime.now())
+        return item
 
     def assign_destinations(self):
         """
@@ -234,7 +234,7 @@ of invoices
             if invoice.store_number == '':
                 self.w = StoreWarningDialog(mb_dest, invoice.invoice_number)
                 self.w.exec_()
-                if self.w.confirmed == True:
+                if self.w.confirmed is True:
                     invoice.store_number = self.w.store_num
                     invoice.store_name = self.w.store_name
                     invoice.distribution_center = self.w.dc_num
@@ -257,10 +257,10 @@ of invoices
                     item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'], invoice.customer)
                 except KeyError:
                     item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'], invoice.customer)
-                if item.UPC == '' or item.UPC == None:
+                if item.UPC == '' or item.UPC is None:
                     self.w = UPCWarningDialog(item.long_style, invoice.invoice_number)
                     self.w.exec_()
-                    if self.w.confirmed == True:
+                    if self.w.confirmed is True:
                         item.UPC = self.w.UPC.strip('\r').strip('\n')
                     else:
                         return False
@@ -280,24 +280,24 @@ of invoices
                 print("PO# %s not in database" % po)
                 self.w = POWarningDialog(po, [inv.invoice_number for inv in self.invoice_list if inv.purchase_order_number == po])
                 self.w.exec_()
-                if self.w.confirmed == True and len(self.w.po_num) > 0:
+                if self.w.confirmed is True and len(self.w.po_num) > 0:
                     for inv in [inv for inv in self.invoice_list if inv.purchase_order_number == po]:
                         inv.purchase_order_number = self.w.po_num
                     self.po_in_db_check()
-                elif self.w.confirmed == True:
+                elif self.w.confirmed is True:
                     continue
                 else:
                     return False
         self.progress += 1
         return True
-        
+
 
     def store_and_item_checks(self):
         for invoice in self.invoice_list:
             try:
                 invoice.po_create_date = self.po_db.query(invoice.purchase_order_number).creation_date
                 if not self.store_for_po_check(invoice):
-                    return False                
+                    return False
             except (KeyError, AttributeError):
                 continue
         self.progress += 1
@@ -332,13 +332,13 @@ of invoices
         else:
             self.w = UPCPOWarningDialog(QtWidgets.QDialog(), item, inv_num, po_num, store)
             self.w.parent.exec_()
-            if self.w.confirmed == False:
+            if self.w.confirmed is False:
                 return False
-            elif self.w.confirmed == True:
+            elif self.w.confirmed is True:
                 item = self.w.item
                 return True
 
-            
+
 
     def item_qty_for_store_check(self, item, store, inv_num, po_num):
         if item.qty_each != float(store.items[item.UPC].total_qty):
@@ -354,13 +354,13 @@ of invoices
 
     def update_ship_status(self):
         print("%s Updating shipping status" % datetime.now())
-        for invoice in self.invoice_list:          
+        for invoice in self.invoice_list:
             po = self.po_db.query(invoice.purchase_order_number)
             if po != None:
                 if invoice.invoice_number not in [inv.invoice_number for inv in po.shipped_invs]:
                     po.shipped_invs.append(invoice)
                     po.shipped_cost += invoice.total_cost
-                    try:                    
+                    try:
                         store = po.stores[invoice.store_number.zfill(4)]
                         store.shipped_cost += invoice.total_cost
                         store.shipped_qty += invoice.total_qty
@@ -385,12 +385,12 @@ of invoices
 
     def write_output(self):
         print("%s Beginning Output" % datetime.now())
-        header_temp, inv_temp, item_temp, label_temp = self.get_output_templates()
+        header_temp, inv_temp, item_temp, label_temp = get_output_templates()
         if self.check_for_existing_file():
             m = OverWriteDialog()
             if m.exec_() == QtWidgets.QMessageBox.Yes:
                 self.append = True
-        if self.append == False:
+        if self.append is False:
             output_string = self.output_header_string(header_temp)
             mode = 'w'
         else:
@@ -398,29 +398,20 @@ of invoices
             mode = 'a'
         label_string = ''
         for invoice in self.invoice_list:
-            label_string += self.output_label_string(label_temp, invoice)
+            label_string += output_label_string(label_temp, invoice)
             output_string += self.output_inv_string(inv_temp, invoice)
             for item in invoice.items:
-                output_string += self.output_item_string(item_temp, item)
+                output_string += output_item_string(item_temp, item)
         with open(self.settings['File Paths']['MAPDATA Path'] + self.customer_settings['ASN File'], mode) as file:
             file.write(output_string)
         with open(self.settings['File Paths']['MAPDATA Path'] + self.customer_settings['Invoice File'], mode) as file:
             file.write(output_string)
-        with open(self.settings['File Paths']['Label Record File'],'a') as file:
+        with open(self.settings['File Paths']['Label Record File'], 'a') as file:
             file.write(label_string)
         print("%s Output successful" % datetime.now())
         self.progress += 1
 
-    def get_output_templates(self):
-        with open("OutputTemplates/HeaderTemplate.txt",'r') as header_file:
-            header = header_file.readline() + '\n'
-        with open("OutputTemplates/InvoiceTemplate.txt",'r') as inv_file:
-            inv = inv_file.readline() + '\n'
-        with open("OutputTemplates/ItemTemplate.txt",'r') as item_file:
-            item = item_file.readline() + '\n'
-        with open("OutputTemplates/LabelTemplate.txt",'r') as label_file:
-            label = label_file.readline() + '\n'
-        return header, inv, item, label
+    
 
     def output_header_string(self, template):
         output = template.replace('ReceiverInvID', self.customer_settings.f_inv_edi_id)
@@ -443,37 +434,47 @@ of invoices
         output = output.replace('Dept', invoice.department_number)
         output = output.replace('DC', invoice.distribution_center)
         output = output.replace('Qty', str(invoice.total_qty))
-        if self.customer_settings.e_create_date_needed == True:
+        if self.customer_settings.e_create_date_needed is True:
             output = output.replace('CreateDate', invoice.po_create_date.strftime("%Y/%m/%d"))
         else:
             output = output.replace('CreateDate', '')
         return output
 
-    def output_item_string(self, template, item):
-        output = template.replace('Style', item.long_style)
-        output = output.replace('UPC', item.UPC)
-        output = output.replace('Qty', str(int(item.qty_each)))
-        output = output.replace('Cost', str(item.unit_cost))
-        #output = output.replace('SecondStyle', item.proper_style)
-        output = output.replace('Color', item.color)
-        output = output.replace('Size', item.size)
-        output = output.replace('Desc', item.description)
-        return output
+def get_output_templates():
+    with open("OutputTemplates/HeaderTemplate.txt", 'r') as header_file:
+        header = header_file.readline() + '\n'
+    with open("OutputTemplates/InvoiceTemplate.txt", 'r') as inv_file:
+        inv = inv_file.readline() + '\n'
+    with open("OutputTemplates/ItemTemplate.txt", 'r') as item_file:
+        item = item_file.readline() + '\n'
+    with open("OutputTemplates/LabelTemplate.txt", 'r') as label_file:
+        label = label_file.readline() + '\n'
+    return header, inv, item, label
 
-    def output_label_string(self, template, invoice):
-        output = template.replace('PO', invoice.purchase_order_number)
-        output = output.replace('Store', invoice.store_number)
-        output = output.replace('SSCC', invoice.SSCC)
-        output = output.replace('Track', invoice.tracking_number)
-        output = output.replace('Date', datetime.now().strftime("%Y%m%d"))
-        output = output.replace('Dept', invoice.department_number)
-        output = output.replace('Inv', invoice.invoice_number)
-        output = output.replace('Add1', invoice.address1)
-        output = output.replace('Add2', invoice.address2)
-        output = output.replace('City', invoice.city)
-        output = output.replace('State', invoice.state)
-        output = output.replace('Zip', invoice.zip_code)
-        output = output.replace('Qty', str(invoice.total_qty))
-        output = output.replace('DC', invoice.distribution_center)
-        output = output.replace('Name', str(invoice.store_name))
-        return output
+def output_item_string(template, item):
+    output = template.replace('Style', item.long_style)
+    output = output.replace('UPC', item.UPC)
+    output = output.replace('Qty', str(int(item.qty_each)))
+    output = output.replace('Cost', str(item.unit_cost))
+    output = output.replace('Color', item.color)
+    output = output.replace('Size', item.size)
+    output = output.replace('Desc', item.description)
+    return output
+
+def output_label_string(template, invoice):
+    output = template.replace('PO', invoice.purchase_order_number)
+    output = output.replace('Store', invoice.store_number)
+    output = output.replace('SSCC', invoice.SSCC)
+    output = output.replace('Track', invoice.tracking_number)
+    output = output.replace('Date', datetime.now().strftime("%Y%m%d"))
+    output = output.replace('Dept', invoice.department_number)
+    output = output.replace('Inv', invoice.invoice_number)
+    output = output.replace('Add1', invoice.address1)
+    output = output.replace('Add2', invoice.address2)
+    output = output.replace('City', invoice.city)
+    output = output.replace('State', invoice.state)
+    output = output.replace('Zip', invoice.zip_code)
+    output = output.replace('Qty', str(invoice.total_qty))
+    output = output.replace('DC', invoice.distribution_center)
+    output = output.replace('Name', str(invoice.store_name))
+    return output

@@ -11,8 +11,10 @@ class PurchaseOrderDB(object):
     """
     def __init__(self, settings):
         self.settings = settings
-        self.db = sqlite3.connect(self.settings['File Paths']['PO Database File'], detect_types=sqlite3.PARSE_DECLTYPES)
-        self.db.row_factory = sqlite3.Row        
+        self.db = sqlite3.connect(self.settings['File Paths']
+                                  ['PO Database File'],
+                                  detect_types=sqlite3.PARSE_DECLTYPES)
+        self.db.row_factory = sqlite3.Row
 
     def make_po(self, row, cursor):
         """
@@ -169,16 +171,16 @@ class PurchaseOrderDB(object):
         """
         c = self.db.cursor()
         c.execute("INSERT INTO purchaseorders VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                 (po.po_number, po.customer, po.creation_date.strftime("%Y-%m-%d"), po.start_ship.strftime("%Y-%m-%d"), po.cancel_ship.strftime("%Y-%m-%d"),
-                  po.total_cost, po.discount, po.label, po.status, po.shipped_cost, pickle.dumps(po.shipped_invs), po.dept))
+                  (po.po_number, po.customer, po.creation_date.strftime("%Y-%m-%d"), po.start_ship.strftime("%Y-%m-%d"), po.cancel_ship.strftime("%Y-%m-%d"),
+                   po.total_cost, po.discount, po.label, po.status, po.shipped_cost, pickle.dumps(po.shipped_invs), po.dept))
         for store in po.stores.values():
             c.execute("INSERT INTO stores VALUES (?,?,?,?,?,?)",
-                     (po.po_number, store.store_num, store.total_cost, store.total_qty,
-                      store.shipped_cost, store.shipped_qty))
+                      (po.po_number, store.store_num, store.total_cost, store.total_qty,
+                       store.shipped_cost, store.shipped_qty))
             for item in store.items.values():
                 c.execute("INSERT INTO items VALUES (?,?,?,?,?,?,?)",
-                         (po.po_number, store.store_num, item.UPC, item.style_num,
-                          item.cost, item.total_qty, False))
+                          (po.po_number, store.store_num, item.UPC, item.style_num,
+                           item.cost, item.total_qty, False))
         self.db.commit()
 
     def get_po_from_export(self):
@@ -195,7 +197,7 @@ class PurchaseOrderDB(object):
                         print(line)
                         if line[1] != 'PO #':
                             print("OK")
-                            if self.query(line[1].lstrip('0')) == None:
+                            if self.query(line[1].lstrip('0')) is None:
                                 if self.get_customer_from_export(line[0]) != False:
                                     PO = PurchaseOrder(line[1].lstrip('0'), self.get_customer_from_export(line[0]))
                                     print("Adding PO# %s" % PO.po_number)
@@ -224,7 +226,7 @@ class PurchaseOrderDB(object):
             print("Could not find file %s" % export_path)
         db_list = self.querymany(po_dict.keys())
 
-                    
+
     def _create_po(self, line, po_dict):
         if line[0] != 'T':
             if line[1].lstrip('0') not in po_dict:
@@ -239,7 +241,7 @@ class PurchaseOrderDB(object):
             else:
                 po = po_dict[line[1].lstrip('0')]
                 self._add_store_to_po(line, po)
-            
+
     def _add_store_to_po(self, line, po):
         if line[4] not in po.stores:
             st = Store(line[4])
@@ -249,7 +251,7 @@ class PurchaseOrderDB(object):
         else:
             st = po.stores[line[4]]
             self._add_item_to_store(line, st)
-            
+
     def _add_item_to_store(self, line, store):
         if line[5] not in store.items:
             item = Item(line[5])
@@ -284,7 +286,7 @@ class PurchaseOrderDB(object):
             print(po.po_number)
             if input() == 'q':
                 return
-            if po.start_ship == '' or po.start_ship == None:
+            if po.start_ship == '' or po.start_ship is None:
                 print("Enter start ship date")
                 while True:
                     try:
@@ -293,7 +295,7 @@ class PurchaseOrderDB(object):
                     except ValueError:
                         print("Invalid format")
                 po.start_ship = date
-            if po.cancel_ship == '' or po.cancel_ship == None:
+            if po.cancel_ship == '' or po.cancel_ship is None:
                 print("Enter cancel ship date")
                 while True:
                     try:
@@ -302,7 +304,7 @@ class PurchaseOrderDB(object):
                     except ValueError:
                         print("Invalid format")
                 po.cancel_ship = date
-            if po.creation_date == '' or po.creation_date == None:
+            if po.creation_date == '' or po.creation_date is None:
                 print("Enter creation date")
                 while True:
                     try:

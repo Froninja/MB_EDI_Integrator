@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtGui
 from ui.pyuic.UiUPCWarningDialog import Ui_Dialog
-from models.purchaseorder import PurchaseOrder, Store
+from models.purchaseorder import PurchaseOrder, Store, Item
 from models.invoice import Invoice, Product
 import sys
 
@@ -190,7 +190,7 @@ class DescriptionWarningDialog(QtWidgets.QDialog):
     def __init__(self, UPC, style_num, inv_num):
         QtWidgets.QDialog.__init__(self)
         self.setWindowTitle("Warning")
-        self.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.vertical_layout = QtWidgets.QVBoxLayout(self)
         self.label = QtWidgets.QLabel(self)
         self.label.setText("Cannot find a description for style %s (UPC %s). Please enter the info below" % (style_num, UPC))
@@ -267,7 +267,7 @@ class UPCPOWarningDialog(Ui_Dialog):
             self.tableWidget.setItem(row, 2, QtWidgets.QTableWidgetItem('$' + str(item.cost)))
             self.tableWidget.setItem(row, 3, QtWidgets.QTableWidgetItem(str(item.total_qty)))
             row += 1
-        
+
     def ignore_clicked(self):
         self.confirmed = True
         self.parent.close()

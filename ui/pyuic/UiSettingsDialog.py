@@ -218,4 +218,3 @@ class Ui_SettingsDialog(object):
         self.StatusLabel.setText(_translate("SettingsDialog", "Status Options"))
         self.AcceptButton.setText(_translate("SettingsDialog", "Accept"))
         self.CancelButton.setText(_translate("SettingsDialog", "Cancel"))
-
