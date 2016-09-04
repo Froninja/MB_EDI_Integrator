@@ -381,8 +381,12 @@ of invoices
                 if invoice.invoice_number not in [inv.invoice_number for inv in po.shipped_invs]:
                     po.shipped_invs.append(invoice)
                     po.shipped_cost += invoice.total_cost
+                    print(invoice.store_number.zfill(4))
                     try:
                         store = po.stores[invoice.store_number.zfill(4)]
+                        if store.shipped_cost == None:
+                            store.shipped_cost = 0.0
+                            store.shipped_qty = 0
                         store.shipped_cost += invoice.total_cost
                         store.shipped_qty += invoice.total_qty
                         if store.shipped_cost >= store.total_cost:
@@ -398,9 +402,9 @@ of invoices
             #self.p.close()
 
     def check_for_existing_file(self):
-        return (os.path.isfile(self.settings['File Paths']['MAPDATA Path']
+        return (os.path.isfile(self.settings['File Paths']['MAPDATA Path'] + '\\'
                                + self.customer_settings['ASN File'])
-                or os.path.isfile(self.settings['File Paths']['MAPDATA Path']
+                or os.path.isfile(self.settings['File Paths']['MAPDATA Path'] + '\\'
                                   + self.customer_settings['Invoice File']))
 
     def write_output(self):
@@ -422,10 +426,10 @@ of invoices
             output_string += self.output_inv_string(inv_temp, invoice)
             for item in invoice.items:
                 output_string += output_item_string(item_temp, item)
-        with open(self.settings['File Paths']['MAPDATA Path']
+        with open(self.settings['File Paths']['MAPDATA Path'] + '\\'
                   + self.customer_settings['ASN File'], mode) as file:
             file.write(output_string)
-        with open(self.settings['File Paths']['MAPDATA Path']
+        with open(self.settings['File Paths']['MAPDATA Path'] + '\\'
                   + self.customer_settings['Invoice File'], mode) as file:
             file.write(output_string)
         with open(self.settings['File Paths']['Label Record File'], 'a') as file:
@@ -434,9 +438,9 @@ of invoices
         self.progress += 1
 
     def output_header_string(self, template):
-        output = template.replace('ReceiverInvID', self.customer_settings.f_inv_edi_id)
-        output = output.replace('ReceiverShipID', self.customer_settings.g_ship_edi_id)
-        output = output.replace('VersionNum', ('00' + self.customer_settings.h_edi_version)[:5])
+        output = template.replace('ReceiverInvID', self.customer_settings['Invoice ID'])
+        output = output.replace('ReceiverShipID', self.customer_settings['ASN ID'])
+        output = output.replace('VersionNum', ('00' + self.customer_settings['EDI Version'])[:5])
         return output
 
     def output_inv_string(self, template, invoice):
@@ -445,7 +449,7 @@ of invoices
         output = output.replace('Track', invoice.tracking_number)
         try:
             output = output.replace('ShipDate', invoice.ship_date.strftime('%Y%m%d'))
-        except:
+        except AttributeError:
             output = output.replace('ShipDate', datetime.now().strftime('%Y%m%d'))
         output = output.replace('DiscCode', invoice.discount_code)
         output = output.replace('Disc', str(invoice.discount_percent))
