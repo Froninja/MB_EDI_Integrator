@@ -1,10 +1,13 @@
+from datetime import datetime, date, timedelta
+import os.path
 from models.invoice import Invoice, Product
 from db.podb import PurchaseOrderDB
-from datetime import datetime, date, timedelta
+from ui.warnings import (WarningDialog, OverWriteDialog, POWarningDialog, UPCWarningDialog,
+                         TrackingWarningDialog, StoreWarningDialog, DescriptionWarningDialog,
+                         UPCPOWarningDialog)
 from PyQt5 import QtWidgets, QtCore
-from ui.warnings import *
 import pymssql
-import os.path
+
 
 class OutputTranslator(QtCore.QObject):
     """Single instance class to add requisite information and output for a list
@@ -41,15 +44,7 @@ of invoices
         return True
 
     def get_customer_settings(self):
-        self.customer_settings = self.settings['Customer Settings'][self.customer]        
-
-    def get_sql_connection(self):
-        """
-        Returns a pymssql connection object based on the connection string in
-        settings.
-        """
-        self.progress += 1
-        return pymssql.connect("10.0.1.93", "amm", "amm", "LFL")
+        self.customer_settings = self.settings['Customer Settings'][self.customer]
 
     def generate_invoices(self, inv_array):
         print("%s Starting invoice generation" % datetime.now())
@@ -59,18 +54,19 @@ of invoices
                 invoice.purchase_order_number = row[1]
                 invoice.discount(row[2])
                 invoice.customer = self.customer
-                invoice.get_dept_num(row[3], self.customer_settings['Asset Department'], self.customer_settings['Memo Department'])
+                invoice.get_dept_num(row[3], self.customer_settings['Asset Department'],
+                                     self.customer_settings['Memo Department'])
                 self.invoice_list.append(invoice)
-                print("%s Created Invoice# %s, with PO# %s, Dept# %s, and discount %s" % (datetime.now(),
-                                                                                          invoice.invoice_number,
-                                                                                          invoice.purchase_order_number,
-                                                                                          invoice.department_number,
-                                                                                          invoice.discount_percent))
+                print("%s Created Invoice# %s, with PO# %s, Dept# %s, and discount %s"
+                      % (datetime.now(), invoice.invoice_number, invoice.purchase_order_number,
+                         invoice.department_number, invoice.discount_percent))
+
         self.invoice_list = sorted(sorted(self.invoice_list, key=lambda inv: inv.store_number),
                                    key=lambda inv: inv.purchase_order_number)
-        print("%s Ending generation. Generated %s invoices" % (datetime.now(), len(self.invoice_list)))
+        print("%s Ending generation. Generated %s invoices"
+              % (datetime.now(), len(self.invoice_list)))
         self.progress += 1
-        
+
     def get_ship_data(self):
         print("%s Querying shipping info" % datetime.now())
         for invoice in self.invoice_list:
@@ -78,9 +74,10 @@ of invoices
             if invoice.tracking_number == '':
                 self.w = TrackingWarningDialog(invoice.invoice_number)
                 self.w.exec_()
-                if self.w.confirmed == True:
+                if self.w.confirmed is True:
                     invoice.tracking_number = self.w.tracking.strip('\n').strip('\r')
-                    invoice.shipping_information_from_tracking(self.settings['File Paths']['Shipping Log'])
+                    invoice.shipping_information_from_tracking(self.settings['File Paths']
+                                                               ['Shipping Log'])
                 else:
                     return False
             invoice.get_SSCC()
@@ -95,16 +92,20 @@ of invoices
         year
         """
         print("%s Querying destinations" % datetime.now())
-        with self.get_sql_connection() as conn:
+        with get_sql_connection(self.settings['SQL Settings']['Connection String']) as conn:
             with conn.cursor(as_dict=True) as cursor:
                 min_date = date.today() - timedelta(365)
-                sql = self.settings['SQL Settings']['Destination Query'].format(','.join(['%s'] * len(self.invoice_list)))
+                sql = (self.settings['SQL Settings']['Destination Query']
+                       .format(','.join(['%s'] * len(self.invoice_list))))
+
                 params = [min_date] + [inv.invoice_number for inv in self.invoice_list]
                 cursor.execute(sql, tuple(params))
                 query_dict = dict()
                 for row in cursor:
                     query_dict[str(row['NrDocF'])] = row
-                sql = self.settings['SQL Settings']['Memo Destination Query'].format(','.join(['%s'] * len(self.invoice_list)))
+                sql = (self.settings['SQL Settings']['Memo Destination Query']
+                       .format(','.join(['%s'] * len(self.invoice_list))))
+
                 params = [min_date] + [inv.invoice_number for inv in self.invoice_list]
                 cursor.execute(sql, tuple(params))
                 for row in cursor:
@@ -121,10 +122,11 @@ of invoices
         current year
         """
         print("%s Querying items" % datetime.now())
-        with self.get_sql_connection() as conn:
+        with get_sql_connection(self.settings['SQL Settings']['Connection String']) as conn:
             with conn.cursor(as_dict=True) as cursor:
                 min_date = date.today() - timedelta(365)
-                sql = self.settings['SQL Settings']['Invoice Query'].format(','.join(['%s'] * len(self.invoice_list)))
+                sql = (self.settings['SQL Settings']['Invoice Query']
+                       .format(','.join(['%s'] * len(self.invoice_list))))
                 params = [min_date] + [inv.invoice_number for inv in self.invoice_list]
                 cursor.execute(sql, tuple(params))
                 query_dict = dict()
@@ -153,17 +155,24 @@ of invoices
                     non_ring_list += "'%s'," % row['codmod']
         ring_list = ring_list.rstrip(',')
         non_ring_list = non_ring_list.rstrip(',')
-        with self.get_sql_connection() as conn:
+        with get_sql_connection(self.settings['SQL Settings']['Connection String']) as conn:
             with conn.cursor(as_dict=True) as cursor:
                 query_dict = dict()
                 if len(ring_list) > 0:
-                    cursor.execute(self.settings['SQL Settings']['Ring UPC Query'].format(ring_list))
+                    cursor.execute(self.settings['SQL Settings']['Ring UPC Query']
+                                   .format(ring_list))
                     for row in cursor:
-                        query_dict['{}-{}-{}-{}-{}'.format(row['CodMod'], row['Cod'], row['Colore'], row['Sup'], str(row['Inch']))] = row
+                        query_dict['{}-{}-{}-{}-{}'.format(row['CodMod'], row['Cod'],
+                                                           row['Colore'], row['Sup'],
+                                                           str(row['Inch']))] = row
+
                 if len(non_ring_list) > 0:
                     cursor.execute(self.settings['SQL Settings']['UPC Query'].format(non_ring_list))
                     for row in cursor:
-                        query_dict['{}-{}-{}-{}-{}'.format(row['CodMod'], row['Cod'], row['Colore'], row['Sup'], str(row['Lgh']))] = row
+                        query_dict['{}-{}-{}-{}-{}'.format(row['CodMod'], row['Cod'],
+                                                           row['Colore'], row['Sup'],
+                                                           str(row['Lgh']))] = row
+
         print("%s Successfully queried %s UPCs" % (datetime.now(), len(query_dict)))
         self.progress += 1
         return query_dict
@@ -178,7 +187,10 @@ of invoices
         query = self.get_items()
         for invoice in self.invoice_list:
             for row in query[invoice.invoice_number]:
-                item = Product('{}-{}-{}-{}-{}'.format(row['codmod'], row['codpiet'], row['colore'], row['codsup'], str(row['lungh'])))
+                item = Product('{}-{}-{}-{}-{}'.format(row['codmod'], row['codpiet'],
+                                                       row['colore'], row['codsup'],
+                                                       str(row['lungh'])))
+
                 item.qty_each = row['qtamov']
                 item.unit_cost = row['valorev']/item.qty_each
                 if self.customer_settings['Description Required'] == 'True':
@@ -239,8 +251,10 @@ of invoices
                     invoice.store_name = self.w.store_name
                     invoice.distribution_center = self.w.dc_num
                     with open(self.settings['File Paths']['Destination Log'], 'a') as dest_log:
-                        dest_log.write("%s,%s,%s,%s,%s\n" % (invoice.customer, mb_dest, invoice.store_number,
-                                                             invoice.distribution_center, invoice.store_name))
+                        dest_log.write("%s,%s,%s,%s,%s\n" % (invoice.customer, mb_dest,
+                                                             invoice.store_number,
+                                                             invoice.distribution_center,
+                                                             invoice.store_name))
                 else:
                     return False
         print("%s Destinations assigned" % datetime.now())
@@ -254,9 +268,11 @@ of invoices
             for item in invoice.items:
                 try:
                     item.UPC = query[item.long_style]['BarCode']
-                    item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'], invoice.customer)
+                    item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'],
+                                             invoice.customer)
                 except KeyError:
-                    item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'], invoice.customer)
+                    item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'],
+                                             invoice.customer)
                 if item.UPC == '' or item.UPC is None:
                     self.w = UPCWarningDialog(item.long_style, invoice.invoice_number)
                     self.w.exec_()
@@ -264,7 +280,8 @@ of invoices
                         item.UPC = self.w.UPC.strip('\r').strip('\n')
                     else:
                         return False
-                item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'], invoice.customer)
+                item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'],
+                                         invoice.customer)
         print("%s UPCs assigned" % datetime.now())
         self.progress += 1
         return True
@@ -276,12 +293,15 @@ of invoices
             if invoice.purchase_order_number not in po_list:
                 po_list.append(invoice.purchase_order_number)
         for po in po_list:
-            if self.po_db.query(po) == None:
+            if self.po_db.query(po) is None:
                 print("PO# %s not in database" % po)
-                self.w = POWarningDialog(po, [inv.invoice_number for inv in self.invoice_list if inv.purchase_order_number == po])
+                self.w = POWarningDialog(po, [inv.invoice_number
+                                              for inv in self.invoice_list
+                                              if inv.purchase_order_number == po])
                 self.w.exec_()
                 if self.w.confirmed is True and len(self.w.po_num) > 0:
-                    for inv in [inv for inv in self.invoice_list if inv.purchase_order_number == po]:
+                    for inv in [inv for inv in self.invoice_list
+                                if inv.purchase_order_number == po]:
                         inv.purchase_order_number = self.w.po_num
                     self.po_in_db_check()
                 elif self.w.confirmed is True:
@@ -295,7 +315,8 @@ of invoices
     def store_and_item_checks(self):
         for invoice in self.invoice_list:
             try:
-                invoice.po_create_date = self.po_db.query(invoice.purchase_order_number).creation_date
+                invoice.po_create_date = (self.po_db.query(invoice.purchase_order_number)
+                                          .creation_date)
                 if not self.store_for_po_check(invoice):
                     return False
             except (KeyError, AttributeError):
@@ -309,14 +330,17 @@ of invoices
             if invoice.store_number.zfill(4) in po.stores:
                 store = po.stores[invoice.store_number.zfill(4)]
                 for item in invoice.items:
-                    if not self.item_for_store_check(item, store, invoice.invoice_number, po.po_number):
+                    if not self.item_for_store_check(item, store,
+                                                     invoice.invoice_number, po.po_number):
                         return False
                 return True
             else:
-                detail_string = "Stores on PO# %s:\n" % po.po_number + "\n".join(["%s"] * len(po.stores)) %\
-                    tuple([store.store_num for store in po.stores.values()])
-                m = WarningDialog("Store# %s (invoice# %s) is not allocated on PO# %s"\
-                    % (invoice.store_number, invoice.invoice_number, po.po_number), detail=detail_string)
+                detail_string = ("Stores on PO# %s:\n" % po.po_number
+                                 + "\n".join(["%s"] * len(po.stores))
+                                 % tuple([store.store_num for store in po.stores.values()]))
+                m = WarningDialog("Store# %s (invoice# %s) is not allocated on PO# %s"
+                                  % (invoice.store_number, invoice.invoice_number, po.po_number),
+                                  detail=detail_string)
                 if m.exec_() == QtWidgets.QMessageBox.Cancel:
                     return False
                 return True
@@ -325,10 +349,7 @@ of invoices
 
     def item_for_store_check(self, item, store, inv_num, po_num):
         if item.UPC in store.items:
-            if self.item_qty_for_store_check(item, store, inv_num, po_num):
-                return True
-            else:
-                return False
+            return self.item_qty_for_store_check(item, store, inv_num, po_num)
         else:
             self.w = UPCPOWarningDialog(QtWidgets.QDialog(), item, inv_num, po_num, store)
             self.w.parent.exec_()
@@ -338,13 +359,13 @@ of invoices
                 item = self.w.item
                 return True
 
-
-
     def item_qty_for_store_check(self, item, store, inv_num, po_num):
         if item.qty_each != float(store.items[item.UPC].total_qty):
             print("Calling warning dialog")
-            detail_string = "Qty on store# %s: %s" % (store.store_num, store.items[item.UPC].total_qty)
-            m = WarningDialog("Qty of style %s on invoice# %s does not match qty for store# %s on PO# %s"\
+            detail_string = "Qty on store# %s: %s" % (store.store_num,
+                                                      store.items[item.UPC].total_qty)
+            m = WarningDialog(
+                "Qty of style %s on invoice# %s does not match qty for store# %s on PO# %s"
                 % (item.long_style, inv_num, store.store_num, po_num), detail=detail_string)
             if m.exec_() == QtWidgets.QMessageBox.Cancel:
                 return False
@@ -377,11 +398,10 @@ of invoices
             #self.p.close()
 
     def check_for_existing_file(self):
-        if os.path.isfile(self.settings['File Paths']['MAPDATA Path'] + self.customer_settings['ASN File'])\
-            or os.path.isfile(self.settings['File Paths']['MAPDATA Path'] + self.customer_settings['Invoice File']):
-            return True
-        else:
-            return False
+        return (os.path.isfile(self.settings['File Paths']['MAPDATA Path']
+                               + self.customer_settings['ASN File'])
+                or os.path.isfile(self.settings['File Paths']['MAPDATA Path']
+                                  + self.customer_settings['Invoice File']))
 
     def write_output(self):
         print("%s Beginning Output" % datetime.now())
@@ -402,16 +422,16 @@ of invoices
             output_string += self.output_inv_string(inv_temp, invoice)
             for item in invoice.items:
                 output_string += output_item_string(item_temp, item)
-        with open(self.settings['File Paths']['MAPDATA Path'] + self.customer_settings['ASN File'], mode) as file:
+        with open(self.settings['File Paths']['MAPDATA Path']
+                  + self.customer_settings['ASN File'], mode) as file:
             file.write(output_string)
-        with open(self.settings['File Paths']['MAPDATA Path'] + self.customer_settings['Invoice File'], mode) as file:
+        with open(self.settings['File Paths']['MAPDATA Path']
+                  + self.customer_settings['Invoice File'], mode) as file:
             file.write(output_string)
         with open(self.settings['File Paths']['Label Record File'], 'a') as file:
             file.write(label_string)
         print("%s Output successful" % datetime.now())
         self.progress += 1
-
-    
 
     def output_header_string(self, template):
         output = template.replace('ReceiverInvID', self.customer_settings.f_inv_edi_id)
@@ -434,13 +454,14 @@ of invoices
         output = output.replace('Dept', invoice.department_number)
         output = output.replace('DC', invoice.distribution_center)
         output = output.replace('Qty', str(invoice.total_qty))
-        if self.customer_settings.e_create_date_needed is True:
+        if self.customer_settings['Creation Date Required']:
             output = output.replace('CreateDate', invoice.po_create_date.strftime("%Y/%m/%d"))
         else:
             output = output.replace('CreateDate', '')
         return output
 
 def get_output_templates():
+    """Returns templates for formatting header, invoice, item, and label output"""
     with open("OutputTemplates/HeaderTemplate.txt", 'r') as header_file:
         header = header_file.readline() + '\n'
     with open("OutputTemplates/InvoiceTemplate.txt", 'r') as inv_file:
@@ -452,6 +473,7 @@ def get_output_templates():
     return header, inv, item, label
 
 def output_item_string(template, item):
+    """Returns a formatted string from the supplied template and invoice"""
     output = template.replace('Style', item.long_style)
     output = output.replace('UPC', item.UPC)
     output = output.replace('Qty', str(int(item.qty_each)))
@@ -462,6 +484,7 @@ def output_item_string(template, item):
     return output
 
 def output_label_string(template, invoice):
+    """Returns a formatted string from the supplied template and invoice"""
     output = template.replace('PO', invoice.purchase_order_number)
     output = output.replace('Store', invoice.store_number)
     output = output.replace('SSCC', invoice.SSCC)
@@ -478,3 +501,19 @@ def output_label_string(template, invoice):
     output = output.replace('DC', invoice.distribution_center)
     output = output.replace('Name', str(invoice.store_name))
     return output
+
+def get_sql_connection(conn_string):
+    """
+    Returns a pymssql connection object based on the connection string in settings.
+    """
+    conn_settings = get_conn_settings(conn_string)
+    return pymssql.connect(conn_settings['SERVER'], conn_settings['UID'],
+                           conn_settings['PWD'], conn_settings['DATABASE'])
+
+def get_conn_settings(conn_string):
+    """
+    Returns a dictionary of connection settings from a given key=value, ;-delimited connection
+    string
+    """
+    conn_list = [item.split('=') for item in conn_string.split(';')]
+    return {item[0]: item[1] for item in conn_list}
