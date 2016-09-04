@@ -1,4 +1,5 @@
-from models.purchaseorder import PurchaseOrder, Store, Item
+#from models.purchaseorder import PurchaseOrder, Store, Item.
+from models.po import PurchaseOrder, Store, Item, database
 from PyQt5 import QtCore, QtWidgets, QtGui
 from datetime import datetime
 import operator
@@ -23,7 +24,7 @@ class POModel(QtCore.QAbstractTableModel):
             return super().flags(index)
 
     def rowCount(self, parent = QtCore.QModelIndex()):
-        return len(self.po_list)
+        return len(list(self.po_list))
 
     def columnCount(self, parent = QtCore.QModelIndex()):
         return len(self.headers)
@@ -42,7 +43,10 @@ class POModel(QtCore.QAbstractTableModel):
             try:
                 return QtCore.QVariant(getattr(self.po_list[index.row()], self.attr[index.column()]).strftime("%m/%d/%Y"))
             except AttributeError:
-                return QtCore.QVariant(getattr(self.po_list[index.row()], self.attr[index.column()]))
+                try:
+                    return QtCore.QVariant(float(getattr(self.po_list[index.row()], self.attr[index.column()])))
+                except ValueError:
+                    return QtCore.QVariant(getattr(self.po_list[index.row()], self.attr[index.column()]))
 
     def setData(self, index, value, role = QtCore.Qt.EditRole):
         print("Calling with %s" % value)
@@ -52,12 +56,12 @@ class POModel(QtCore.QAbstractTableModel):
                 try:
                     setattr(po, self.attr[index.column()], datetime.strptime(value, "%m/%d/%Y"))
                     print("Value is good")
-                    self.mainform.po_db.update(po)
+                    po.save()
                 except ValueError:
                     print("Invalid date format")
             else:
                 setattr(po, self.attr[index.column()], value)
-                self.mainform.po_db.update(po)
+                po.save()
             return True
 
     def sort(self, int, order = QtCore.Qt.AscendingOrder):

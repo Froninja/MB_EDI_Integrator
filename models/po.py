@@ -5,11 +5,11 @@ def read_config(file_name):
     with open(file_name, 'r') as f:
         return yaml.load(f)
 
-db = SqliteDatabase(read_config('Config.yaml')['File Paths']['PO Database File'])
+database = SqliteDatabase(read_config('Config.yaml')['File Paths']['PO Database File'])
 
 class BaseModel(Model):
     class Meta:
-        database = db
+        database = database
 
 class PurchaseOrder(BaseModel):
     #Data derived from EDI 850:
@@ -52,9 +52,9 @@ class Item(BaseModel):
 
 
 def create_tables():
-    db.connect()
-    db.create_tables([PurchaseOrder, Store, Item])
-    db.close()
+    database.connect()
+    database.create_tables([PurchaseOrder, Store, Item])
+    database.close()
 
 
 if __name__ == '__main__':
@@ -73,7 +73,7 @@ if __name__ == '__main__':
         conn = sqlite3.connect('PO_Database')
         c = conn.cursor()
         c.execute("SELECT * FROM stores")
-        db.connect()
+        database.connect()
         for row in c.fetchall():
             po = PurchaseOrder.select().where(PurchaseOrder.po_number == row[0]).get()
             store = Store(purchase_order=po,
@@ -87,7 +87,7 @@ if __name__ == '__main__':
             else:
                 store.shipped = False
             store.save()
-        db.close()
+        database.close()
     try:
         Item.select()[0]
         print("There are items")
@@ -95,7 +95,7 @@ if __name__ == '__main__':
         conn = sqlite3.connect('PO_Database')
         c = conn.cursor()
         c.execute("SELECT * FROM items")
-        db.connect()
+        database.connect()
         for row in c.fetchall():
             query = (Store
                      .select()
@@ -108,4 +108,4 @@ if __name__ == '__main__':
                         cost=row[4],
                         total_qty=row[5])
             item.save()
-        db.close()
+        database.close()

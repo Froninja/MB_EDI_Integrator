@@ -1,6 +1,5 @@
 from ui.pyuic.UiShippingWindow import Ui_MainWindow
 from ui.settingsdialog import SettingsDialog
-from db.podb import PurchaseOrderDB
 from translate.translator import OutputTranslator
 from translate.translatetest import TranslatorUnitTest
 from helpers.config import read_config
@@ -62,7 +61,6 @@ class ShippingWindow(Ui_MainWindow):
         self.EntryExecuteButton.clicked.connect(self.execute_translator)
         self.ShiplogLookupButton.clicked.connect(self.shiplog_lookup)
         self.ShiplogExecuteButton.clicked.connect(self.shiplog_execute)
-        self.po_db = PurchaseOrderDB(self.settings)
         self.invoice_table_setup()
         self.self_test()
 

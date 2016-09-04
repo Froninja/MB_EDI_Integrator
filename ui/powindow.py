@@ -3,6 +3,7 @@ from ui.settingsdialog import SettingsDialog
 from ui.storeview import StoreViewWindow
 from ui.viewmodels.pomodel import POModel
 from ui.viewmodels.poprinter import Ui_POPrintView
+from models.po import PurchaseOrder, Store, Item, database
 from db.podb import PurchaseOrderDB
 from helpers.export import Exporter
 from helpers.config import read_config
@@ -35,8 +36,8 @@ class POWindow(Ui_MainWindow):
         self.actionView_Distro.triggered.connect(self.open_po_table_view)
         self.CustomerBox.activated.connect(self.po_list_filter)
         self.AgeSlider.valueChanged.connect(self.po_list_filter)
-        self.po_db = PurchaseOrderDB(self.settings)
-        self.po_model = POModel(self.po_db.queryall(), self.parent, self)
+        self.po_db = database
+        self.po_model = POModel([], self.parent, self)
         self.po_model.parent_form = self
         self.po_model.layoutChanged.connect(self.insert_combo_boxes)
         self.POTable.setModel(self.po_model)
@@ -84,7 +85,12 @@ class POWindow(Ui_MainWindow):
         for num in range(len(self.status_boxes)):
             if self.status_boxes[num].isChecked() == True:
                 status.append(self.settings['Statuses'][num])
-        self.po_model.po_list = self.po_db.queryfilters(customer, tdiff, status)
+        self.po_model.po_list = (PurchaseOrder
+                                 .select(PurchaseOrder)
+                                 .where(PurchaseOrder.customer == customer,
+                                        PurchaseOrder.status << status,
+                                        PurchaseOrder.creation_date > datetime.now() - timedelta(tdiff)))
+        #self.po_model.po_list = self.po_db.queryfilters(customer, tdiff, status)
         self.po_model.resetInternalData()
         self.POTable.model().modelReset.emit()
         self.insert_combo_boxes()
