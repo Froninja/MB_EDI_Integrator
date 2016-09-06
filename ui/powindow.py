@@ -35,7 +35,7 @@ class POWindow(Ui_MainWindow):
         self.actionView_Distro.triggered.connect(self.open_po_table_view)
         self.CustomerBox.activated.connect(self.po_list_filter)
         self.AgeSlider.valueChanged.connect(self.po_list_filter)
-        self.po_db = PurchaseOrderDB(self.settings)
+        self.po_db = PurchaseOrderDB(self.settings['File Paths']['PO Database File'])
         self.po_model = POModel(self.po_db.queryall(), self.parent, self)
         self.po_model.parent_form = self
         self.po_model.layoutChanged.connect(self.insert_combo_boxes)

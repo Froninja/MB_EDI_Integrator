@@ -2,9 +2,9 @@ from datetime import datetime, date, timedelta
 import os.path
 from models.invoice import Invoice, Product
 from db.podb import PurchaseOrderDB
-from ui.warnings import (WarningDialog, OverWriteDialog, POWarningDialog, UPCWarningDialog,
-                         TrackingWarningDialog, StoreWarningDialog, DescriptionWarningDialog,
-                         UPCPOWarningDialog)
+from ui.warnings import (OverWriteDialog, UPCWarningDialog,
+                         TrackingWarningDialog, StoreWarningDialog, DescriptionWarningDialog,)
+from translate.validater import DbValidater
 from PyQt5 import QtWidgets, QtCore
 import pymssql
 
@@ -22,9 +22,10 @@ of invoices
         self.append = append
         self.test = test
         self.get_customer_settings()
+        self.validater = None
 
     def initiate_db(self):
-        self.po_db = PurchaseOrderDB(self.settings)
+        self.po_db = PurchaseOrderDB(self.settings['File Paths']['PO Database File'])
 
     def run(self, inv_array):
         self.generate_invoices(inv_array)
@@ -35,12 +36,11 @@ of invoices
         self.assign_items()
         if not self.assign_upcs():
             return False
-        if not self.po_in_db_check():
+        self.validater = DbValidater(self.settings['File Paths']['PO Database File'],
+                                     self.invoice_list)
+        if not self.validater.check_po():
+            print("%s Operation canceled by user" % datetime.now())
             return False
-        if not self.store_and_item_checks():
-            print("failed check")
-            return False
-        self.update_ship_status()
         return True
 
     def get_customer_settings(self):
@@ -286,121 +286,6 @@ of invoices
         self.progress += 1
         return True
 
-    def po_in_db_check(self):
-        print("%s Starting PO Check" % datetime.now())
-        po_list = []
-        for invoice in self.invoice_list:
-            if invoice.purchase_order_number not in po_list:
-                po_list.append(invoice.purchase_order_number)
-        for po in po_list:
-            if self.po_db.query(po) is None:
-                print("PO# %s not in database" % po)
-                self.w = POWarningDialog(po, [inv.invoice_number
-                                              for inv in self.invoice_list
-                                              if inv.purchase_order_number == po])
-                self.w.exec_()
-                if self.w.confirmed is True and len(self.w.po_num) > 0:
-                    for inv in [inv for inv in self.invoice_list
-                                if inv.purchase_order_number == po]:
-                        inv.purchase_order_number = self.w.po_num
-                    self.po_in_db_check()
-                elif self.w.confirmed is True:
-                    continue
-                else:
-                    return False
-        self.progress += 1
-        return True
-
-
-    def store_and_item_checks(self):
-        for invoice in self.invoice_list:
-            try:
-                invoice.po_create_date = (self.po_db.query(invoice.purchase_order_number)
-                                          .creation_date)
-                if not self.store_for_po_check(invoice):
-                    return False
-            except (KeyError, AttributeError):
-                continue
-        self.progress += 1
-        return True
-
-    def store_for_po_check(self, invoice):
-        po = self.po_db.query(invoice.purchase_order_number)
-        try:
-            if invoice.store_number.zfill(4) in po.stores:
-                store = po.stores[invoice.store_number.zfill(4)]
-                for item in invoice.items:
-                    if not self.item_for_store_check(item, store,
-                                                     invoice.invoice_number, po.po_number):
-                        return False
-                return True
-            else:
-                detail_string = ("Stores on PO# %s:\n" % po.po_number
-                                 + "\n".join(["%s"] * len(po.stores))
-                                 % tuple([store.store_num for store in po.stores.values()]))
-                m = WarningDialog("Store# %s (invoice# %s) is not allocated on PO# %s"
-                                  % (invoice.store_number, invoice.invoice_number, po.po_number),
-                                  detail=detail_string)
-                if m.exec_() == QtWidgets.QMessageBox.Cancel:
-                    return False
-                return True
-        except AttributeError:
-            return True
-
-    def item_for_store_check(self, item, store, inv_num, po_num):
-        if item.UPC in store.items:
-            return self.item_qty_for_store_check(item, store, inv_num, po_num)
-        else:
-            self.w = UPCPOWarningDialog(QtWidgets.QDialog(), item, inv_num, po_num, store)
-            self.w.parent.exec_()
-            if self.w.confirmed is False:
-                return False
-            elif self.w.confirmed is True:
-                item = self.w.item
-                return True
-
-    def item_qty_for_store_check(self, item, store, inv_num, po_num):
-        if item.qty_each != float(store.items[item.UPC].total_qty):
-            print("Calling warning dialog")
-            detail_string = "Qty on store# %s: %s" % (store.store_num,
-                                                      store.items[item.UPC].total_qty)
-            m = WarningDialog(
-                "Qty of style %s on invoice# %s does not match qty for store# %s on PO# %s"
-                % (item.long_style, inv_num, store.store_num, po_num), detail=detail_string)
-            if m.exec_() == QtWidgets.QMessageBox.Cancel:
-                return False
-            return True
-        else:
-            return True
-
-    def update_ship_status(self):
-        print("%s Updating shipping status" % datetime.now())
-        for invoice in self.invoice_list:
-            po = self.po_db.query(invoice.purchase_order_number)
-            if po != None:
-                if invoice.invoice_number not in [inv.invoice_number for inv in po.shipped_invs]:
-                    po.shipped_invs.append(invoice)
-                    po.shipped_cost += invoice.total_cost
-                    print(invoice.store_number.zfill(4))
-                    try:
-                        store = po.stores[invoice.store_number.zfill(4)]
-                        if store.shipped_cost == None:
-                            store.shipped_cost = 0.0
-                            store.shipped_qty = 0
-                        store.shipped_cost += invoice.total_cost
-                        store.shipped_qty += invoice.total_qty
-                        if store.shipped_cost >= store.total_cost:
-                            store.shipped = True
-                    except:
-                        print("Store error")
-                        print(invoice.store_number)
-                        print([store.store_num for store in po.stores.values()])
-                self.po_db.update(po)
-        self.progress += 1
-        print(self.progress)
-        #if self.test:
-            #self.p.close()
-
     def check_for_existing_file(self):
         return (os.path.isfile(self.settings['File Paths']['MAPDATA Path'] + '\\'
                                + self.customer_settings['ASN File'])
@@ -458,11 +343,12 @@ of invoices
         output = output.replace('Dept', invoice.department_number)
         output = output.replace('DC', invoice.distribution_center)
         output = output.replace('Qty', str(invoice.total_qty))
-        if self.customer_settings['Creation Date Required']:
+        try:
             output = output.replace('CreateDate', invoice.po_create_date.strftime("%Y/%m/%d"))
-        else:
-            output = output.replace('CreateDate', '')
+        except AttributeError:
+            output = output.replace('CreateDate', datetime.now().strftime("%Y/%m/%d"))
         return output
+
 
 def get_output_templates():
     """Returns templates for formatting header, invoice, item, and label output"""

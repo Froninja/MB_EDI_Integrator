@@ -62,7 +62,7 @@ class ShippingWindow(Ui_MainWindow):
         self.EntryExecuteButton.clicked.connect(self.execute_translator)
         self.ShiplogLookupButton.clicked.connect(self.shiplog_lookup)
         self.ShiplogExecuteButton.clicked.connect(self.shiplog_execute)
-        self.po_db = PurchaseOrderDB(self.settings)
+        self.po_db = PurchaseOrderDB(self.settings['File Paths']['PO Database File'])
         self.invoice_table_setup()
         self.self_test()
 

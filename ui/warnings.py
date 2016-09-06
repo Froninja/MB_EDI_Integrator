@@ -5,7 +5,7 @@ from models.invoice import Invoice, Product
 import sys
 
 class WarningDialog(QtWidgets.QMessageBox):
-    def __init__(self, message, **kwargs):
+    def __init__(self, message, detail=None):
         QtWidgets.QMessageBox.__init__(self)
         self.setWindowTitle("Warning")
         self.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
@@ -13,8 +13,8 @@ class WarningDialog(QtWidgets.QMessageBox):
         self.setInformativeText("Continue or cancel?")
         self.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
         self.setDefaultButton(QtWidgets.QMessageBox.Cancel)
-        if 'detail' in kwargs:
-            self.setDetailedText(kwargs['detail'])
+        if detail is not None:
+            self.setDetailedText(detail)
 
 class OverWriteDialog(QtWidgets.QMessageBox):
     def __init__(self):

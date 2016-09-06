@@ -9,11 +9,9 @@ class PurchaseOrderDB(object):
     as a SQLite3 file. Methods generally exposed - query, querymany, queryfilters,
     update, insert - accept and return PurchaseOrder objects
     """
-    def __init__(self, settings):
-        self.settings = settings
-        self.db = sqlite3.connect(self.settings['File Paths']
-                                  ['PO Database File'],
-                                  detect_types=sqlite3.PARSE_DECLTYPES)
+    def __init__(self, db_name):
+        #self.settings = settings
+        self.db = sqlite3.connect(db_name, detect_types=sqlite3.PARSE_DECLTYPES)
         self.db.row_factory = sqlite3.Row
 
     def make_po(self, row, cursor):
@@ -35,10 +33,10 @@ class PurchaseOrderDB(object):
         po.dept = row['dept']
         po.label = row['label']
         po.shipped_cost = row['shippedcost']
-        #try:
-            #po.shipped_invs = pickle.loads(row['shippedinvs'])
-        #except (pickle.UnpicklingError, EOFError):
-            #pass
+        try:
+            po.shipped_invs = pickle.loads(row['shippedinvs'])
+        except (pickle.UnpicklingError, EOFError, ImportError):
+            pass
         try:
             po.start_ship = datetime.strptime(row['startdate'], '%Y-%m-%d')
         except ValueError:
