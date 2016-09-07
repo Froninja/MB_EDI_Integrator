@@ -27,6 +27,10 @@ of invoices
     def initiate_db(self):
         self.po_db = PurchaseOrderDB(self.settings['File Paths']['PO Database File'])
 
+    def get_validater(self):
+        self.validater = DbValidater(self.settings['File Paths']['PO Database File'],
+                                     self.invoice_list)
+
     def run(self, inv_array):
         self.generate_invoices(inv_array)
         if not self.get_ship_data():
@@ -36,8 +40,7 @@ of invoices
         self.assign_items()
         if not self.assign_upcs():
             return False
-        self.validater = DbValidater(self.settings['File Paths']['PO Database File'],
-                                     self.invoice_list)
+        self.get_validater()
         if not self.validater.check_po():
             print("%s Operation canceled by user" % datetime.now())
             return False

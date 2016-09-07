@@ -9,8 +9,8 @@ class Launcher(Ui_Launcher):
         super(Launcher, self).__init__()
         self.setupUi(dialog)
         dialog.setWindowTitle("MB EDI Launcher")
-        dialog.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
-        self.VersionLabel.setText("Beta 0.5.6 9-2-2016")
+        dialog.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
+        self.VersionLabel.setText("Beta 0.5.7 9-5-2016")
         self.ShipButton.clicked.connect(self.ship_clicked)
         self.POButton.clicked.connect(self.po_clicked)
 

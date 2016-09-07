@@ -149,3 +149,11 @@ class Product(object):
                 line = line.rstrip('\n').split(',')
                 if line[:2] == [customer, self.long_style]:
                     self.UPC = line[2]
+
+    @classmethod
+    def from_item(cls, item):
+        prod = Product(item.style_num)
+        prod.UPC = item.UPC
+        prod.unit_cost = item.cost
+        prod.qty_each = item.total_qty
+        return prod
