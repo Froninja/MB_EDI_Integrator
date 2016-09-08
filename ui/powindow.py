@@ -1,6 +1,7 @@
 from ui.pyuic.UiPOWindow import Ui_MainWindow
 from ui.settingsdialog import SettingsDialog
 from ui.storeview import StoreViewWindow
+from ui.manual import ManualInvoiceWindow
 from ui.viewmodels.pomodel import POModel
 from ui.viewmodels.poprinter import Ui_POPrintView
 from db.podb import PurchaseOrderDB
@@ -53,6 +54,9 @@ class POWindow(Ui_MainWindow):
         distro_action = QtWidgets.QAction("View as Table", self.POTable)
         distro_action.triggered.connect(self.open_po_table_view)
         self.POTable.addAction(distro_action)
+        manual_action = QtWidgets.QAction("Create Invoice/ASN", self.POTable)
+        manual_action.triggered.connect(self.open_manual_entry)
+        self.POTable.addAction(manual_action)
 
     def create_filter_boxes(self):
         self.status_boxes = []
@@ -103,6 +107,13 @@ class POWindow(Ui_MainWindow):
         self.po_view = Ui_POPrintView()
         self.po_view.setupUi(po_list, q)
         q.exec_()
+
+    def open_manual_entry(self):
+        order = self.POTable.model().po_list[self.POTable.selectedIndexes()[0].row()]
+        if order is not None:
+            dialog = QtWidgets.QDialog()
+            manual = ManualInvoiceWindow(dialog, self.settings, order)
+            dialog.exec_()
         
     def export_for_ss(self):
         indices = self.POTable.selectedIndexes()

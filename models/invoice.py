@@ -119,6 +119,10 @@ class Invoice(object):
         except:
             pass
 
+    def totals(self):
+        self.total_cost = sum([item.unit_cost * item.qty_each for item in self.items])
+        self.total_qty = sum([item.qty_each for item in self.items])
+
     def add_item(self, item):
         self.item_count += 1
         self.total_qty += item.qty_each

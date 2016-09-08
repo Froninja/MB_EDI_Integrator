@@ -28,7 +28,6 @@ class ManualInvoiceWindow(Ui_ManualDialog):
         output = OutputTranslator(self.CustomerBox.currentText(), self.settings)
         output.invoice_list = [self.generate_invoice()]
         output.get_customer_settings()
-        output.get_ship_data()
         output.get_validater()
         if not output.validater.check_po():
             return
@@ -38,13 +37,16 @@ class ManualInvoiceWindow(Ui_ManualDialog):
         invoice = Invoice(self.InvoiceEdit.text())
         invoice.purchase_order_number = self.order.po_number
         invoice.customer = self.CustomerBox.currentText()
-        invoice.get_dept_num(False, self.settings[invoice.customer]['Asset Department'],
-                             self.settings[invoice.customer]['Memo Department'])
+        invoice.get_dept_num(False, self.settings['Customer Settings']
+                             [invoice.customer]['Asset Department'],
+                             self.settings['Customer Settings']
+                             [invoice.customer]['Memo Department'])
         invoice.tracking_number = self.TrackingBox.text()
         invoice.discount(self.DiscountSpin.value())
         invoice.ship_date = self.ShipDateCal.date()
         invoice.store_number = self.StoreBox.currentText()
         invoice.items = [Product.from_item(item) for item in self.ItemTable.model().item_list]
+        invoice.totals()
         return invoice
 
 
