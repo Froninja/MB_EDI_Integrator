@@ -47,6 +47,7 @@ class ManualInvoiceWindow(Ui_ManualDialog):
         invoice.store_number = self.StoreBox.currentText()
         invoice.items = [Product.from_item(item) for item in self.ItemTable.model().item_list]
         invoice.totals()
+        invoice.get_SSCC()
         return invoice
 
 
