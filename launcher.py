@@ -1,8 +1,9 @@
+import sys
 from ui.pyuic.UiLauncherDialog import Ui_Launcher
 from ui.powindow import POWindow
 from ui.shipwindow import ShippingWindow
 from PyQt5 import QtWidgets, QtGui
-import sys
+
 
 class Launcher(Ui_Launcher):
     def __init__(self, dialog):

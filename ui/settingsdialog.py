@@ -43,7 +43,7 @@ class SettingsDialog(Ui_SettingsDialog):
     def __init__(self, settings_dialog, settings):
         super(SettingsDialog, self).__init__()
         self.parent = settings_dialog
-        self.parent.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.parent.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.setupUi(self.parent)
         self.CancelButton.clicked.connect(self.cancel_clicked)
         self.AcceptButton.clicked.connect(self.accept_clicked)

@@ -9,7 +9,7 @@ class StoreViewWindow(Ui_StoreViewWindow):
         self.parent = main_window
         self.setupUi(self.parent)
         self.parent.setWindowTitle("MB EDI PO# %s" % po.po_number)
-        self.parent.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.parent.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.po = po
         self.model = StoreModel(list(po.stores.values()))
         self.StoreView.setModel(self.model)

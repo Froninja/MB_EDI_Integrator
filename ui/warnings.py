@@ -8,7 +8,7 @@ class WarningDialog(QtWidgets.QMessageBox):
     def __init__(self, message, detail=None):
         QtWidgets.QMessageBox.__init__(self)
         self.setWindowTitle("Warning")
-        self.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.setText(message)
         self.setInformativeText("Continue or cancel?")
         self.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
@@ -21,7 +21,7 @@ class OverWriteDialog(QtWidgets.QMessageBox):
         QtWidgets.QMessageBox.__init__(self)
 
         self.setWindowTitle("Overwrite?")
-        self.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.setText("A previous output file already exists. Do you want to append this file?")
         self.setInformativeText("Caution: Selecting No can overwrite previous work")
         self.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
@@ -31,7 +31,7 @@ class POWarningDialog(QtWidgets.QDialog):
     def __init__(self, po_num, inv_num):
         QtWidgets.QDialog.__init__(self)
         self.setWindowTitle("PO Warning")
-        self.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.vertical_layout = QtWidgets.QVBoxLayout(self)
         self.label = QtWidgets.QLabel(self)
         self.label.setText("PO# %s does not seem to be a valid PO#. Please confirm or enter a new PO#" % po_num)
@@ -68,7 +68,7 @@ class UPCWarningDialog(QtWidgets.QDialog):
     def __init__(self, style_num, inv_num):
         QtWidgets.QDialog.__init__(self)
         self.setWindowTitle("UPC Warning")
-        self.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.vertical_layout = QtWidgets.QVBoxLayout(self)
         self.label = QtWidgets.QLabel(self)
         self.label.setText("Cannot find a UPC for %s. Please enter the UPC below" % style_num)
@@ -105,7 +105,7 @@ class TrackingWarningDialog(QtWidgets.QDialog):
     def __init__(self, inv_num):
         QtWidgets.QDialog.__init__(self)
         self.setWindowTitle("Tracking Warning")
-        self.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.vertical_layout = QtWidgets.QVBoxLayout(self)
         self.label = QtWidgets.QLabel(self)
         self.label.setText("Cannot find a tracking number for Invoice# %s. Please enter the tracking number below" % inv_num)
@@ -139,7 +139,7 @@ class StoreWarningDialog(QtWidgets.QDialog):
     def __init__(self, dest, inv_num):
         QtWidgets.QDialog.__init__(self)
         self.setWindowTitle("Store Warning")
-        self.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.vertical_layout = QtWidgets.QVBoxLayout(self)
         self.label = QtWidgets.QLabel(self)
         self.label.setText("Cannot find a store number for %s. Please enter the info below" % dest)

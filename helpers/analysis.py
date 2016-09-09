@@ -21,7 +21,9 @@ def ship_log_analyzer(log_array, customer):
             #print(len(set(log_item[1]).intersection(item)))
             if len(set(log_item[1]).intersection(item)) > distance:
                 distance = len(set(log_item[1]).intersection(item))
-                print("Rule: ", item, " | Intersect: ", len(set(log_item[1]).intersection(item)), " | New Distance: ", distance)
+                print("Rule: ", item, " | Intersect: ",
+                      len(set(log_item[1]).intersection(item)),
+                      " | New Distance: ", distance)
         if distance < 3:
             out_array.remove(log_item)
     print(out_array)

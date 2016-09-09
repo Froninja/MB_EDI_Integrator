@@ -78,7 +78,7 @@ class Ui_POPrintView(object):
     def setupUi(self, po_list, POPrintView):
         POPrintView.setObjectName("POPrintView")
         POPrintView.setWindowTitle("MB EDI PO# %s" % po_list[0].po_number)
-        POPrintView.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        POPrintView.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.parent = POPrintView
         self.po_list = po_list
         self.gridLayout = QtWidgets.QGridLayout(POPrintView)

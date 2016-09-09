@@ -49,7 +49,6 @@ class PurchaseOrderDB(object):
             store = Store(row['storenum'])
             store.shipped_cost = row['shippedcost']
             store.shipped_qty = row['shippedqty']
-            
             store.total_qty = row['totalqty']
             if store.shipped_cost == store.total_cost and store.shipped_qty == store.total_qty:
                 store.shipped = True
@@ -124,7 +123,8 @@ class PurchaseOrderDB(object):
         c = self.db.cursor()
         if len(status) < 1:
             status = ['', None]
-        sql = ('SELECT * FROM purchaseorders WHERE customer=? AND createdate>? AND status IN (%s)' % ','.join('?' * len(status)))
+        sql = ('SELECT * FROM purchaseorders WHERE customer=? AND createdate>? AND status IN (%s)'
+               % ','.join('?' * len(status)))
         params = [customer, (date.today() - timedelta(days)).strftime("%Y-%m-%d")] + status
         return_list = []
         for row in c.execute(sql, params).fetchall():
@@ -147,19 +147,22 @@ class PurchaseOrderDB(object):
         c.execute("""UPDATE purchaseorders
         SET customer=?, createdate=?, startdate=?, canceldate=?, totalcost=?, discount=?, label=?, status=?, shippedcost=?, shippedinvs=?, dept=?
         WHERE ponum=?""",
-        (po.customer, po.creation_date.strftime("%Y-%m-%d"), po.start_ship.strftime("%Y-%m-%d"), po.cancel_ship.strftime("%Y-%m-%d"), po.total_cost,
-         po.discount, po.label, po.status, po.shipped_cost, pickle.dumps(po.shipped_invs), po.dept, po.po_number))
+                  (po.customer, po.creation_date.strftime("%Y-%m-%d"),
+                   po.start_ship.strftime("%Y-%m-%d"), po.cancel_ship.strftime("%Y-%m-%d"),
+                   po.total_cost, po.discount, po.label, po.status, po.shipped_cost,
+                   pickle.dumps(po.shipped_invs), po.dept, po.po_number))
         for store in po.stores.values():
             c.execute("""UPDATE stores
             SET totalcost=?, totalqty=?, shippedcost=?, shippedqty=?
             WHERE ponum=? AND storenum=?""",
-            (store.total_cost, store.total_qty, store.shipped_cost, store.shipped_qty,
-             po.po_number, store.store_num))
+                      (store.total_cost, store.total_qty, store.shipped_cost,
+                       store.shipped_qty, po.po_number, store.store_num))
             for item in store.items.values():
                 c.execute("""UPDATE items
                 SET style=?, cost=?, qty=?
                 WHERE ponum=? AND storenum=? AND upc=?""",
-                (item.style_num, item.cost, item.total_qty, po.po_number, store.store_num, item.UPC))
+                          (item.style_num, item.cost, item.total_qty,
+                           po.po_number, store.store_num, item.UPC))
         self.db.commit()
 
     def insert(self, po):

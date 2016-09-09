@@ -26,7 +26,7 @@ class POWindow(Ui_MainWindow):
         self.parent = main_window
         self.setupUi(self.parent)
         main_window.setWindowTitle("MB EDI Purchase Orders")
-        main_window.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        main_window.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.settings = read_config('Config.yaml')
         self.create_filter_boxes()
         for customer in sorted(list(self.settings['Customer Settings'].keys())):

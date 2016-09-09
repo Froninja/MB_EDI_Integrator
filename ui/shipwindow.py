@@ -22,7 +22,7 @@ class ProgressDialog(QtWidgets.QDialog):
     def __init__(self, text):
         QtWidgets.QDialog.__init__(self)
         self.setWindowTitle("Processing")
-        self.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.layout = QtWidgets.QVBoxLayout(self)
         self.header = QtWidgets.QLabel(self)
         self.header.setText(text)
@@ -53,7 +53,7 @@ class ShippingWindow(Ui_MainWindow):
         self.ShiplogLookup.setSelectionMode(QtWidgets.QTableWidget.MultiSelection)
         self.ShipDate.setDate(QtCore.QDate.currentDate())
         self.parent.setWindowTitle("MB EDI Shipping")
-        self.parent.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.parent.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.settings = read_config('Config.yaml')
         for customer in sorted(list(self.settings['Customer Settings'].keys())):
             self.CustomerBox.addItem(customer)

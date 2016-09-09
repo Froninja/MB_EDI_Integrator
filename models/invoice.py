@@ -1,7 +1,7 @@
 from datetime import datetime
 
 class Invoice(object):
-    """description of class"""   
+    """description of class"""
     def __init__(self, invoice_number):
         self.invoice_number = invoice_number
         self.customer = ""
@@ -29,22 +29,22 @@ class Invoice(object):
     def discount(self, discount_percent):
         if discount_percent >= 0:
             self.discount_percent = discount_percent
-        elif discount_percent == None:
+        elif discount_percent is None:
             self.discount_percent = 0
-        if discount_percent == 0 or discount_percent == None:
+        if discount_percent == 0 or discount_percent is None:
             self.discount_code = "05"
         else:
             self.discount_code = "08"
 
     def get_dept_num(self, memo_val, asset_dept, memo_dept):
-        if memo_val == True or memo_val == 2:
+        if memo_val is True or memo_val == 2:
             self.department_number = memo_dept.zfill(4)
         else:
             self.department_number = asset_dept.zfill(4)
 
     def shipping_information(self, shiplog):
         for line in reversed(open(shiplog, "r").readlines()):
-            line = line.replace('"','').split(",")
+            line = line.replace('"', '').split(",")
             invoice = line[10].split(" ")
             for item in invoice:
                 if len(item) == 5:
@@ -60,7 +60,7 @@ class Invoice(object):
     def shipping_information_from_tracking(self, shiplog):
         ship_log = open(shiplog, "r")
         for line in ship_log:
-            line = line.replace('"','').split(",")
+            line = line.replace('"', '').split(",")
             if line[9] == "{}".format(str(self.tracking_number)):
                 self.ship_date = datetime.strptime(line[0], '%Y%m%d')
                 self.address1 = line[2]
@@ -71,12 +71,12 @@ class Invoice(object):
         ship_log.close()
 
     def print_shipping_info(self):
-        return "{}, {}, {}, {}, {}, {}, {}".format(self._tracking_number,
-                                                   self._ship_date,
-                                                   self._address1,
-                                                   self._address2,
-                                                   self._city, self._state,
-                                                   self._zip_code)
+        return "{}, {}, {}, {}, {}, {}, {}".format(self.tracking_number,
+                                                   self.ship_date,
+                                                   self.address1,
+                                                   self.address2,
+                                                   self.city, self.state,
+                                                   self.zip_code)
 
     def get_SSCC(self):
         base_string = 80327620000000000

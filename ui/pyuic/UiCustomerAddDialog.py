@@ -5,7 +5,7 @@ class Ui_CustomerAddDialog(object):
     def setupUi(self, CustomerAddDialog, sample_cust):
         CustomerAddDialog.setObjectName("CustomerAddDialog")
         self.parent = CustomerAddDialog
-        self.parent.setWindowIcon(QtGui.QIcon("Resources\MBIcon.bmp"))
+        self.parent.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.sample_cust = sample_cust
         self.confirmed = False
         self.gridLayout = QtWidgets.QGridLayout(CustomerAddDialog)

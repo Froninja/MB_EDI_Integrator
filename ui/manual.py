@@ -7,6 +7,8 @@ class ManualInvoiceWindow(Ui_ManualDialog):
     def __init__(self, main_window, settings, order):
         super(ManualInvoiceWindow, self).__init__()
         self.setupUi(main_window)
+        main_window.setWindowTitle("Data Entry")
+        main_window.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.settings = settings
         self.order = order
         self.ItemTable.setModel(ItemModel(main_window))
@@ -32,7 +34,7 @@ class ManualInvoiceWindow(Ui_ManualDialog):
         if not output.validater.check_po():
             return
         output.write_output()
-        
+
     def generate_invoice(self):
         invoice = Invoice(self.InvoiceEdit.text())
         invoice.purchase_order_number = self.order.po_number
