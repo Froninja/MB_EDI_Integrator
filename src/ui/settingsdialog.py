@@ -1,5 +1,5 @@
-from ui.pyuic.UiSettingsDialog import Ui_SettingsDialog
-from ui.pyuic.UiCustomerAddDialog import Ui_CustomerAddDialog
+from src.ui.pyuic.UiSettingsDialog import Ui_SettingsDialog
+from src.ui.pyuic.UiCustomerAddDialog import Ui_CustomerAddDialog
 from PyQt5 import QtCore, QtWidgets, QtGui
 import yaml
 

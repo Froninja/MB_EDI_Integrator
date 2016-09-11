@@ -30,11 +30,11 @@ class Invoice(object):
 
     def discount(self, discount_percent):
         """Sets the discount value and EDI discount code based on the provided value"""
-        if discount_percent >= 0:
-            self.discount_percent = discount_percent
-        elif discount_percent is None:
+        if discount_percent is None:
             self.discount_percent = 0
-        if discount_percent == 0 or discount_percent is None:
+        elif int(discount_percent) >= 0:
+            self.discount_percent = int(discount_percent)
+        if discount_percent is None or int(discount_percent) == 0:
             self.discount_code = "05"
         else:
             self.discount_code = "08"

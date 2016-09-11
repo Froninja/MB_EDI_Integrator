@@ -1,6 +1,6 @@
-from ui.pyuic.UiManualInvoiceDialog import Ui_ManualDialog
-from translate.translator import OutputTranslator
-from models.invoice import Invoice, Product
+from src.ui.pyuic.UiManualInvoiceDialog import Ui_ManualDialog
+from src.translate.translator import OutputTranslator
+from src.models.invoice import Invoice, Product
 from PyQt5 import QtCore
 
 class ManualInvoiceWindow(Ui_ManualDialog):

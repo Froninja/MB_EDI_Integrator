@@ -1,4 +1,4 @@
-from models.purchaseorder import PurchaseOrder, Store, Item
+from src.models.purchaseorder import PurchaseOrder, Store, Item
 from PyQt5 import QtCore, QtWidgets, QtGui
 from datetime import datetime
 import operator

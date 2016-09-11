@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from ui.viewmodels.invtable import InvoiceTable
+from src.ui.viewmodels.invtable import InvoiceTable
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):

@@ -1,10 +1,10 @@
 from datetime import datetime, date, timedelta
 import os.path
-from models.invoice import Invoice, Product
-from db.podb import PurchaseOrderDB
-from ui.warnings import (OverWriteDialog, UPCWarningDialog,
+from src.models.invoice import Invoice, Product
+from src.db.podb import PurchaseOrderDB
+from src.ui.warnings import (OverWriteDialog, UPCWarningDialog,
                          TrackingWarningDialog, StoreWarningDialog, DescriptionWarningDialog,)
-from translate.validater import DbValidater
+from src.translate.validater import DbValidater
 from PyQt5 import QtWidgets, QtCore
 import pymssql
 

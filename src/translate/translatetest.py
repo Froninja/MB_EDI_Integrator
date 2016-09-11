@@ -1,5 +1,5 @@
-from translate.translator import OutputTranslator
-from models.invoice import Invoice, Product
+from src.translate.translator import OutputTranslator
+from src.models.invoice import Invoice, Product
 from datetime import datetime
 
 """Test values:

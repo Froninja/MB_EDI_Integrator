@@ -1,5 +1,5 @@
-from db.podb import PurchaseOrderDB
-from ui.warnings import WarningDialog, POWarningDialog, UPCPOWarningDialog
+from src.db.podb import PurchaseOrderDB
+from src.ui.warnings import WarningDialog, POWarningDialog, UPCPOWarningDialog
 from PyQt5 import QtWidgets
 
 class DbValidater(object):
@@ -34,7 +34,6 @@ class DbValidater(object):
 
     def check_store(self, invoice, order):
         """Validates invoice against stores on the PO. Returns false if user cancels."""
-        #order = self.po_dict[invoice.purchase_order_number]
         if order is not None and invoice.store_number.zfill(4) in order.stores:
             store = order.stores[invoice.store_number.zfill(4)]
             for item in invoice.items:

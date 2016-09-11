@@ -1,7 +1,7 @@
 import sqlite3
 import pickle
 from datetime import datetime, timedelta, date
-from models.purchaseorder import PurchaseOrder, Store, Item
+from src.models.purchaseorder import PurchaseOrder, Store, Item
 
 class PurchaseOrderDB(object):
     """
@@ -87,32 +87,6 @@ class PurchaseOrderDB(object):
         return_list = []
         for po in po_list:
             return_list.append(self.query(po))
-        return return_list
-
-    def queryfilters(self, **kwargs):
-        """
-        Kwargs: customer=customer name; date=days in the past; complete=bool
-        Returns a list of PurchaseOrder objects containing all POs in the DB
-        that meet the provided customer, date, and completion filters
-        """
-        c = self.db.cursor()
-        rows = c.execute("""SELECT ponum
-        FROM purchaseorders""").fetchall()
-        po_list = self.querymany([row[0] for row in rows])
-        counter = 0
-        return_list = po_list[:]
-        for po in po_list:
-            if 'customer' in kwargs and po.customer != kwargs['customer']:
-                return_list.remove(po)
-            elif 'date' in kwargs:
-                delta = timedelta(kwargs['date'])
-                try:
-                    if po.creation_date < datetime.today() - delta:
-                        return_list.remove(po)
-                except TypeError:
-                    return_list.remove(po)
-            #elif 'complete' in kwargs and po.complete != kwargs['complete']:
-                #return_list.remove(po)
         return return_list
 
     def queryfilters(self, customer, days, status):
