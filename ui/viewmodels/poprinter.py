@@ -9,9 +9,9 @@ class POPrintModel(QtCore.QAbstractTableModel):
         self.item_list = []
         for store in self.store_list:
             for item in store.items.values():
-                if item.UPC not in [item.UPC for item in self.item_list]:
+                if item.upc not in [item.upc for item in self.item_list]:
                     self.item_list.append(item)
-        self.item_list.sort(key=operator.attrgetter('UPC'))
+        self.item_list.sort(key=operator.attrgetter('upc'))
 
     def rowCount(self, parent = QtCore.QModelIndex()):
         return len(self.item_list) + 1
@@ -47,27 +47,27 @@ class POPrintModel(QtCore.QAbstractTableModel):
                     store = self.store_list[index.column() - 3]
                     return QtCore.QVariant(sum([item.total_qty for item in store.items.values()]))
             elif index.column() == 0:
-                return QtCore.QVariant(self.item_list[index.row()].UPC)
+                return QtCore.QVariant(self.item_list[index.row()].upc)
             elif index.column() == 1:
                 return QtCore.QVariant(self.item_list[index.row()].style_num)
             elif index.column() == 2:
-                UPC = self.item_list[index.row()].UPC
-                return QtCore.QVariant(sum([store.items[UPC].total_qty for store in self.store_list if UPC in store.items]))
+                upc = self.item_list[index.row()].upc
+                return QtCore.QVariant(sum([store.items[upc].total_qty for store in self.store_list if upc in store.items]))
             #elif index.row() == len(self.item_list) and index.column() > 2:
             else:
                 item = self.item_list[index.row()]
                 store = self.store_list[index.column() - 3]
-                if item.UPC in store.items.keys():
-                    return QtCore.QVariant(store.items[item.UPC].total_qty)
+                if item.upc in store.items.keys():
+                    return QtCore.QVariant(store.items[item.upc].total_qty)
                 else:
                     return QtCore.QVariant('')
 
     def sort(self, int, order = QtCore.Qt.AscendingOrder):
         self.layoutAboutToBeChanged.emit()
         if order != QtCore.Qt.DescendingOrder and int == 0:
-            self.item_list.sort(key=operator.attrgetter('UPC'), reverse=True)
+            self.item_list.sort(key=operator.attrgetter('upc'), reverse=True)
         elif int == 0:
-            self.item_list.sort(key=operator.attrgetter('UPC'))
+            self.item_list.sort(key=operator.attrgetter('upc'))
         elif order != QtCore.Qt.DescendingOrder and int == 1:
             self.item_list.sort(key=operator.attrgetter('style_num'), reverse=True)
         elif int == 1:

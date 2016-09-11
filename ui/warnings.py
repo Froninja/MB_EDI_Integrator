@@ -54,6 +54,8 @@ class POWarningDialog(QtWidgets.QDialog):
         self.confirmed = False
 
     def confirm_clicked(self):
+        """Sets the po_num attribute to the user entered text, sets the confirmed attribute to
+        true, and closes the dialog"""
         #if self.input_box.text() != '' or self.input_box.text() != None:
         self.po_num = self.input_box.text()
         self.confirmed = True
@@ -62,6 +64,7 @@ class POWarningDialog(QtWidgets.QDialog):
             #pass
 
     def cancel_clicked(self):
+        """Closes the dialog"""
         self.close()
 
 class UPCWarningDialog(QtWidgets.QDialog):
@@ -87,12 +90,12 @@ class UPCWarningDialog(QtWidgets.QDialog):
         self.cancel_button.clicked.connect(self.cancel_clicked)
         self.h_layout.addWidget(self.cancel_button)
         self.vertical_layout.addWidget(self.button_frame)
-        self.UPC = ''
+        self.upc = ''
         self.confirmed = False
 
     def confirm_clicked(self):
         if self.input_box.text() != '' or self.input_box.text() != None:
-            self.UPC = self.input_box.text()
+            self.upc = self.input_box.text()
             self.confirmed = True
             self.close()
         else:
@@ -187,13 +190,13 @@ class StoreWarningDialog(QtWidgets.QDialog):
         self.close()
 
 class DescriptionWarningDialog(QtWidgets.QDialog):
-    def __init__(self, UPC, style_num, inv_num):
+    def __init__(self, upc, style_num, inv_num):
         QtWidgets.QDialog.__init__(self)
         self.setWindowTitle("Warning")
         self.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.vertical_layout = QtWidgets.QVBoxLayout(self)
         self.label = QtWidgets.QLabel(self)
-        self.label.setText("Cannot find a description for style %s (UPC %s). Please enter the info below" % (style_num, UPC))
+        self.label.setText("Cannot find a description for style %s (UPC %s). Please enter the info below" % (style_num, upc))
         self.vertical_layout.addWidget(self.label)
         self.inv_label = QtWidgets.QLabel(self)
         self.inv_label.setText("Invoice(s): %s" % str(inv_num).rstrip(']').lstrip('['))
@@ -252,7 +255,7 @@ class UPCPOWarningDialog(Ui_Dialog):
         self.setupUi(parent)
         self.populate_table(store)
         self.WarningLabel.setText("UPC %s (Style %s) on invoice# %s is not allocated to store# %s on PO# %s" %
-                                  (item.UPC, item.long_style, inv_num, store.store_num, po_num))
+                                  (item.upc, item.long_style, inv_num, store.store_num, po_num))
         self.IgnoreButton.clicked.connect(self.ignore_clicked)
         self.ConfirmButton.clicked.connect(self.confirm_clicked)
         self.CancelButton.clicked.connect(self.cancel_clicked)
@@ -263,7 +266,7 @@ class UPCPOWarningDialog(Ui_Dialog):
         self.tableWidget.setRowCount(len(store.items.values()))
         for item in store.items.values():
             self.tableWidget.setItem(row, 0, QtWidgets.QTableWidgetItem(item.style_num))
-            self.tableWidget.setItem(row, 1, QtWidgets.QTableWidgetItem(item.UPC))
+            self.tableWidget.setItem(row, 1, QtWidgets.QTableWidgetItem(item.upc))
             self.tableWidget.setItem(row, 2, QtWidgets.QTableWidgetItem('$' + str(item.cost)))
             self.tableWidget.setItem(row, 3, QtWidgets.QTableWidgetItem(str(item.total_qty)))
             row += 1
@@ -273,7 +276,7 @@ class UPCPOWarningDialog(Ui_Dialog):
         self.parent.close()
 
     def confirm_clicked(self):
-        self.item.UPC = self.tableWidget.selectedItems()[1].text()
+        self.item.upc = self.tableWidget.selectedItems()[1].text()
         self.confirmed = True
         self.parent.close()
 
@@ -285,11 +288,11 @@ if __name__ == '__main__':
     x = QtWidgets.QApplication(sys.argv)
     d = QtWidgets.QDialog()
     i = Product("ABC")
-    i.UPC = "12345"
+    i.upc = "12345"
     s = Store("123")
     s.items["1"] = Item("12346")
     s.items["2"] = Item("23468")
     a = UPCPOWarningDialog(d, i, "5322", "932185", s)
     a.parent.show()
     x.exec_()
-    print(a.item.UPC)
+    print(a.item.upc)

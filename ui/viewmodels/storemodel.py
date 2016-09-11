@@ -80,7 +80,7 @@ class StoreModel(TreeModel):
         TreeModel.__init__(self)
         self.headers = ['Store/UPC #', 'Style Number', 'Cost', 'Total Qty', 'Shipped Cost']
         self.store_attr = ['store_num', '', 'total_cost', 'total_qty', 'shipped_cost']
-        self.item_attr = ['UPC', 'style_num', 'cost', 'total_qty', '']
+        self.item_attr = ['upc', 'style_num', 'cost', 'total_qty', '']
         self.parent_form = ''
 
     def flags(self, index):

@@ -60,7 +60,7 @@ class PurchaseOrderDB(object):
                 item.cost = irow['cost']
                 item.style_num = irow['style']
                 item.total_qty = irow['qty']
-                store.items[item.UPC] = item
+                store.items[item.upc] = item
             store.total_cost = sum([item.cost * item.total_qty for item in store.items.values()])
             po.stores[store.store_num] = store
         po.total_cost = sum([store.total_cost for store in po.stores.values()])
@@ -162,7 +162,7 @@ class PurchaseOrderDB(object):
                 SET style=?, cost=?, qty=?
                 WHERE ponum=? AND storenum=? AND upc=?""",
                           (item.style_num, item.cost, item.total_qty,
-                           po.po_number, store.store_num, item.UPC))
+                           po.po_number, store.store_num, item.upc))
         self.db.commit()
 
     def insert(self, po):
@@ -180,7 +180,7 @@ class PurchaseOrderDB(object):
                        store.shipped_cost, store.shipped_qty))
             for item in store.items.values():
                 c.execute("INSERT INTO items VALUES (?,?,?,?,?,?,?)",
-                          (po.po_number, store.store_num, item.UPC, item.style_num,
+                          (po.po_number, store.store_num, item.upc, item.style_num,
                            item.cost, item.total_qty, False))
         self.db.commit()
 
@@ -256,11 +256,11 @@ class PurchaseOrderDB(object):
     def _add_item_to_store(self, line, store):
         if line[5] not in store.items:
             item = Item(line[5])
-            print("Creating item with UPC #%s" % item.UPC)
+            print("Creating item with UPC #%s" % item.upc)
             item.style_num = line[6]
             item.cost = line[7]
             item.total_qty = line[9]
-            store.items[item.UPC] = item
+            store.items[item.upc] = item
 
     def get_customer_from_export(self, id):
         """

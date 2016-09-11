@@ -83,7 +83,7 @@ of invoices
                                                                ['Shipping Log'])
                 else:
                     return False
-            invoice.get_SSCC()
+            invoice.get_sscc()
         print("%s Shipping info complete" % datetime.now())
         self.progress += 1
         return True
@@ -217,7 +217,7 @@ of invoices
                     item.size = line[2]
                     item.color = line[3]
         if item.description == '':
-            self.w = DescriptionWarningDialog(item.UPC, item.long_style, inv.invoice_number)
+            self.w = DescriptionWarningDialog(item.upc, item.long_style, inv.invoice_number)
             self.w.exec_()
             if self.w.confirmed is True:
                 item.description = self.w.description
@@ -270,20 +270,20 @@ of invoices
         for invoice in self.invoice_list:
             for item in invoice.items:
                 try:
-                    item.UPC = query[item.long_style]['BarCode']
-                    item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'],
+                    item.upc = query[item.long_style]['BarCode']
+                    item.upc_exception_check(self.settings['File Paths']['UPC Exception Log'],
                                              invoice.customer)
                 except KeyError:
-                    item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'],
+                    item.upc_exception_check(self.settings['File Paths']['UPC Exception Log'],
                                              invoice.customer)
-                if item.UPC == '' or item.UPC is None:
+                if item.upc == '' or item.upc is None:
                     self.w = UPCWarningDialog(item.long_style, invoice.invoice_number)
                     self.w.exec_()
                     if self.w.confirmed is True:
-                        item.UPC = self.w.UPC.strip('\r').strip('\n')
+                        item.upc = self.w.upc.strip('\r').strip('\n')
                     else:
                         return False
-                item.UPC_exception_check(self.settings['File Paths']['UPC Exception Log'],
+                item.upc_exception_check(self.settings['File Paths']['UPC Exception Log'],
                                          invoice.customer)
         print("%s UPCs assigned" % datetime.now())
         self.progress += 1
@@ -341,7 +341,7 @@ of invoices
             output = output.replace('ShipDate', datetime.now().strftime('%Y%m%d'))
         output = output.replace('DiscCode', invoice.discount_code)
         output = output.replace('Disc', str(invoice.discount_percent))
-        output = output.replace('SSCC', invoice.SSCC)
+        output = output.replace('SSCC', invoice.sscc)
         output = output.replace('PO', invoice.purchase_order_number)
         output = output.replace('Dept', invoice.department_number)
         output = output.replace('DC', invoice.distribution_center)
@@ -368,7 +368,7 @@ def get_output_templates():
 def output_item_string(template, item):
     """Returns a formatted string from the supplied template and invoice"""
     output = template.replace('Style', item.long_style)
-    output = output.replace('UPC', item.UPC)
+    output = output.replace('UPC', item.upc)
     output = output.replace('Qty', str(int(item.qty_each)))
     output = output.replace('Cost', str(item.unit_cost))
     output = output.replace('Color', item.color)
@@ -380,7 +380,7 @@ def output_label_string(template, invoice):
     """Returns a formatted string from the supplied template and invoice"""
     output = template.replace('PO', invoice.purchase_order_number)
     output = output.replace('Store', invoice.store_number)
-    output = output.replace('SSCC', invoice.SSCC)
+    output = output.replace('SSCC', invoice.sscc)
     output = output.replace('Track', invoice.tracking_number)
     output = output.replace('Date', datetime.now().strftime("%Y%m%d"))
     output = output.replace('Dept', invoice.department_number)

@@ -206,7 +206,7 @@ class POPrinter(QtCore.QObject):
                                                                                        sum([item.total_qty for item in store.items.values()])))
             cursor.insertText("Items\n")
             for item in sorted(store.items.values(), key=lambda item: item.style_num):
-                cursor.insertText("Style: %s\tUPC: %s\tUnit Cost: $%s\tQty: %s\n" % (item.style_num, item.UPC,
+                cursor.insertText("Style: %s\tUPC: %s\tUnit Cost: $%s\tQty: %s\n" % (item.style_num, item.upc,
                                                                                      item.cost, item.total_qty))
 
         document.print_(printer)

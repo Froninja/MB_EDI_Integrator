@@ -54,7 +54,7 @@ class DbValidater(object):
         Validates item's UPC against UPCs for the given store on the PO. Returns false
         if user cancels.
         """
-        if item.UPC in store.items:
+        if item.upc in store.items:
             return self.check_qty(item, store, inv_num, po_num)
         else:
             self.warning_dialog = create_upc_warning_dialog(item, store, inv_num, po_num)
@@ -66,7 +66,7 @@ class DbValidater(object):
         Validates item's qty against qty for the given store on the PO. Returns false if user
         cancels.
         """
-        if item.qty_each == float(store.items[item.UPC].total_qty):
+        if item.qty_each == float(store.items[item.upc].total_qty):
             return True
         else:
             self.warning_dialog = create_qty_warning_dialog(item, store, inv_num, po_num)
@@ -150,4 +150,4 @@ def create_qty_warning_dialog(item, store, inv_num, po_num):
     return WarningDialog("Qty of style %s on invoice# %s does not match store# %s on PO# %s"
                          % (item.long_style, store.store_num, inv_num, po_num),
                          detail=("Qty on store# %s: %s"
-                                 % (store.store_num, store.items[item.UPC].total_qty)))
+                                 % (store.store_num, store.items[item.upc].total_qty)))

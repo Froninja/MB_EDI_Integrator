@@ -18,13 +18,13 @@ class Exporter(object):
                 column = []
                 column.append(order.po_number)
                 for item in order.items.values():
-                    column.append(item.UPC)
+                    column.append(item.upc)
                 po_row.append(column)
                 for store in order.stores.values():
                     column = [store.store_num]
-                    for Upc in po_row[0][1:]:
-                        if Upc in store.items.keys():
-                            column.append(str(store.items[Upc].total_qty))
+                    for upc in po_row[0][1:]:
+                        if upc in store.items.keys():
+                            column.append(str(store.items[upc].total_qty))
                         else:
                             column.append(str(0))
                     po_row.append(column)

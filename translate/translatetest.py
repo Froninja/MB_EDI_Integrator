@@ -45,7 +45,7 @@ class TranslatorUnitTest(object):
         inv.ship_date = datetime(2015, 12, 15)
         inv.discount_code = '05'
         inv.discount_percent = 0
-        inv.SSCC = '803276200000591289'
+        inv.sscc = '803276200000591289'
         inv.purchase_order_number = '6163130'
         inv.department_number = '0162'
         inv.distribution_center = '0185'
@@ -58,7 +58,7 @@ class TranslatorUnitTest(object):
         inv.state = 'TN'
         inv.zip_code = '37086'
         p1 = Product('CB1779- -Y-02-42.0')
-        p1.UPC = '8032762238027'
+        p1.upc = '8032762238027'
         p1.qty_each = 1
         p1.unit_cost = 795
         inv.items.append(p1)
@@ -97,10 +97,10 @@ class TranslatorUnitTest(object):
             print("Discount Percent PASS")
         else:
             print("\n===Discount Percent FAIL===\n===Was %s; Should be %s===\n" % (inv.discount_percent, test_inv.discount_percent))
-        if inv.SSCC == test_inv.SSCC:
+        if inv.sscc == test_inv.sscc:
             print("SSCC PASS")
         else:
-            print("\n===SSCC FAIL===\n===Was %s; Should be %s===\n" % (inv.SSCC, test_inv.SSCC))
+            print("\n===SSCC FAIL===\n===Was %s; Should be %s===\n" % (inv.sscc, test_inv.sscc))
         if inv.purchase_order_number == test_inv.purchase_order_number:
             print("PO Number PASS")
         else:

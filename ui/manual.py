@@ -49,7 +49,7 @@ class ManualInvoiceWindow(Ui_ManualDialog):
         invoice.store_number = self.StoreBox.currentText()
         invoice.items = [Product.from_item(item) for item in self.ItemTable.model().item_list]
         invoice.totals()
-        invoice.get_SSCC()
+        invoice.get_sscc()
         return invoice
 
 
@@ -57,7 +57,7 @@ class ItemModel(QtCore.QAbstractTableModel):
     def __init__(self, parent, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         self.item_list = []
-        self.attr = ['UPC', 'style_num', 'cost', 'total_qty']
+        self.attr = ['upc', 'style_num', 'cost', 'total_qty']
         self.headers = ['UPC', 'Style Number', 'Cost', 'Qty']
 
     def flags(self, index):

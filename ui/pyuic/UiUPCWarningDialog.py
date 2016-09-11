@@ -54,10 +54,13 @@ class Ui_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "UPC Warning"))
         self.WarningLabel.setText(_translate("Dialog", "UPCWarning"))
-        self.label_2.setText(_translate("Dialog", "Press Ignore to ignore this warning and continue with the original UPC"))
-        self.label_3.setText(_translate("Dialog", "Select a UPC below and press Confirm to continue with the selected UPC"))
+        self.label_2.setText(_translate("Dialog",
+                                        "Press Ignore to ignore this warning and continue with the\
+                                        original UPC"))
+        self.label_3.setText(_translate("Dialog",
+                                        "Select a UPC below and press Confirm to continue with the\
+                                        selected UPC"))
         self.label_4.setText(_translate("Dialog", "Press Cancel to cancel the operation"))
         self.IgnoreButton.setText(_translate("Dialog", "Ignore"))
         self.CancelButton.setText(_translate("Dialog", "Cancel"))
         self.ConfirmButton.setText(_translate("Dialog", "Confirm"))
-

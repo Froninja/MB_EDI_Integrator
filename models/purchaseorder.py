@@ -38,7 +38,7 @@ class PurchaseOrder(object):
                         item.style_num = line[6]
                         item.stores.append(line[4])
                         item.total_qty += float(line[9])
-                        self.items[item.UPC] = item
+                        self.items[item.upc] = item
                     else:
                         item = self.items[line[5]]
                         item.stores.append(line[4])
@@ -55,7 +55,7 @@ class PurchaseOrder(object):
                         item.style_num = line[6]
                         item.cost = float(line[7])
                         item.total_qty = line[9]
-                        store.items[item.UPC] = item
+                        store.items[item.upc] = item
                         store.total_cost += item.cost
                         store.total_qty += float(item.total_qty)
                         self.stores[store.store_num] = store
@@ -65,20 +65,20 @@ class PurchaseOrder(object):
                         item.style_num = line[6]
                         item.cost = line[7]
                         item.total_qty = line[9]
-                        store.items[item.UPC] = item
+                        store.items[item.upc] = item
                         store.total_cost += float(item.cost)
                         store.total_qty += float(item.total_qty)
 
 class Item(object):
-    def __init__(self, UPC):
-        self.UPC = UPC
+    def __init__(self, upc):
+        self.upc = upc
         self.style_num = ''
         self.stores = []
         self.cost = 0
         self.total_qty = 0
 
     def __repr__(self):
-        return "{0}: Cost: ${1}, Qty {2}\n".format(self.UPC, self.cost,
+        return "{0}: Cost: ${1}, Qty {2}\n".format(self.upc, self.cost,
                                                  self.total_qty)
 
 class Store(object):
@@ -95,6 +95,6 @@ class Store(object):
         return_string = "{0}: Cost: ${1}, Qty {2}\n".format(self.store_num,
                                                           self.total_cost,
                                                           self.total_qty)
-        for item in sorted(self.items.values(), key=lambda x: x.UPC):
+        for item in sorted(self.items.values(), key=lambda x: x.upc):
             return_string += item.__repr__()
         return return_string"""
