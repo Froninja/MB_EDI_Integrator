@@ -1,6 +1,9 @@
 from datetime import datetime, date, timedelta
 import os.path
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from src.models.invoice import Invoice, Product
+from src.models.output import OutputRecord
 from src.db.podb import PurchaseOrderDB
 from src.ui.warnings import (OverWriteDialog, UPCWarningDialog,
                          TrackingWarningDialog, StoreWarningDialog, DescriptionWarningDialog,)
@@ -309,8 +312,9 @@ of invoices
             output_string = ''
             mode = 'a'
         label_string = ''
+        session = get_session(self.settings['File Paths']['PO Database File'])
         for invoice in self.invoice_list:
-            label_string += output_label_string(label_temp, invoice)
+            add_output_row(session, invoice)
             output_string += self.output_inv_string(inv_temp, invoice)
             for item in invoice.items:
                 output_string += output_item_string(item_temp, item)
@@ -320,8 +324,7 @@ of invoices
         with open(self.settings['File Paths']['MAPDATA Path'] + '\\'
                   + self.customer_settings['Invoice File'], mode) as file:
             file.write(output_string)
-        with open(self.settings['File Paths']['Label Record File'], 'a') as file:
-            file.write(label_string)
+        session.commit()
         print("%s Output successful" % datetime.now())
         self.progress += 1
 
@@ -376,24 +379,23 @@ def output_item_string(template, item):
     output = output.replace('Desc', item.description)
     return output
 
-def output_label_string(template, invoice):
-    """Returns a formatted string from the supplied template and invoice"""
-    output = template.replace('PO', invoice.purchase_order_number)
-    output = output.replace('Store', invoice.store_number)
-    output = output.replace('SSCC', invoice.sscc)
-    output = output.replace('Track', invoice.tracking_number)
-    output = output.replace('Date', datetime.now().strftime("%Y%m%d"))
-    output = output.replace('Dept', invoice.department_number)
-    output = output.replace('Inv', invoice.invoice_number)
-    output = output.replace('Add1', invoice.address1)
-    output = output.replace('Add2', invoice.address2)
-    output = output.replace('City', invoice.city)
-    output = output.replace('State', invoice.state)
-    output = output.replace('Zip', invoice.zip_code)
-    output = output.replace('Qty', str(invoice.total_qty))
-    output = output.replace('DC', invoice.distribution_center)
-    output = output.replace('Name', str(invoice.store_name))
-    return output
+def add_output_row(session, invoice):
+    """Creates an OutputRecord for the given invoice and adds it to the provided session"""
+    output = OutputRecord(inv_num=invoice.invoice_number,
+                          po_num=invoice.purchase_order_number,
+                          store_num=invoice.store_number,
+                          store_name=invoice.store_name,
+                          dc_num=invoice.distribution_center,
+                          dept_num=invoice.department_number,
+                          total_qty=int(invoice.total_qty),
+                          ship_date=datetime.now(),
+                          sscc=invoice.sscc,
+                          tracking=invoice.tracking_number,
+                          address1=invoice.address1,
+                          address2=invoice.address2,
+                          city_state_zip=(invoice.city + ', ' + invoice.state
+                                          + ' ' + invoice.zip_code))
+    session.add(output)
 
 def get_sql_connection(conn_string):
     """
@@ -410,3 +412,13 @@ def get_conn_settings(conn_string):
     """
     conn_list = [item.split('=') for item in conn_string.split(';')]
     return {item[0]: item[1] for item in conn_list}
+
+def get_session(db_file):
+    """Returns a Sqlalchemy session object for the provided database"""
+    Session = sessionmaker(bind=get_engine(db_file))
+    session = Session()
+    return session
+
+def get_engine(db_file):
+    """Returns a Sqlalchemy engine object for the provided database"""
+    return create_engine(r'sqlite:///' + db_file)

@@ -64,7 +64,7 @@ class ShippingWindow(Ui_MainWindow):
         self.ShiplogExecuteButton.clicked.connect(self.shiplog_execute)
         self.po_db = PurchaseOrderDB(self.settings['File Paths']['PO Database File'])
         self.invoice_table_setup()
-        self.self_test()
+        #self.self_test()
 
     def self_test(self):
         thread1 = ProgressThread("Running Self-Test")
