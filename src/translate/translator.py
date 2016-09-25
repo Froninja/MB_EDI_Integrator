@@ -1,5 +1,7 @@
+from os import path
 from datetime import datetime, date, timedelta
-import os.path
+from PyQt5 import QtWidgets, QtCore
+import pymssql
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from src.models.invoice import Invoice, Product
@@ -8,8 +10,6 @@ from src.db.podb import PurchaseOrderDB
 from src.ui.warnings import (OverWriteDialog, UPCWarningDialog,
                          TrackingWarningDialog, StoreWarningDialog, DescriptionWarningDialog,)
 from src.translate.validater import DbValidater
-from PyQt5 import QtWidgets, QtCore
-import pymssql
 
 
 class OutputTranslator(QtCore.QObject):
@@ -293,14 +293,14 @@ of invoices
         return True
 
     def check_for_existing_file(self):
-        return (os.path.isfile(self.settings['File Paths']['MAPDATA Path'] + '\\'
+        return (path.isfile(self.settings['File Paths']['MAPDATA Path'] + '\\'
                                + self.customer_settings['ASN File'])
-                or os.path.isfile(self.settings['File Paths']['MAPDATA Path'] + '\\'
+                or path.isfile(self.settings['File Paths']['MAPDATA Path'] + '\\'
                                   + self.customer_settings['Invoice File']))
 
     def write_output(self):
         print("%s Beginning Output" % datetime.now())
-        header_temp, inv_temp, item_temp, label_temp = get_output_templates()
+        header_temp, inv_temp, item_temp = get_output_templates()
         if self.check_for_existing_file():
             m = OverWriteDialog()
             if m.exec_() == QtWidgets.QMessageBox.Yes:
@@ -357,16 +357,14 @@ of invoices
 
 
 def get_output_templates():
-    """Returns templates for formatting header, invoice, item, and label output"""
+    """Returns templates for formatting header, invoice, item output"""
     with open("OutputTemplates/HeaderTemplate.txt", 'r') as header_file:
         header = header_file.readline() + '\n'
     with open("OutputTemplates/InvoiceTemplate.txt", 'r') as inv_file:
         inv = inv_file.readline() + '\n'
     with open("OutputTemplates/ItemTemplate.txt", 'r') as item_file:
         item = item_file.readline() + '\n'
-    with open("OutputTemplates/LabelTemplate.txt", 'r') as label_file:
-        label = label_file.readline() + '\n'
-    return header, inv, item, label
+    return header, inv, item
 
 def output_item_string(template, item):
     """Returns a formatted string from the supplied template and invoice"""
