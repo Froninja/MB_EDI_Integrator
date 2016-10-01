@@ -7,6 +7,8 @@ from src.ui.viewmodels.poprinter import Ui_POPrintView
 from src.db.podb import PurchaseOrderDB
 from src.helpers.export import Exporter
 from src.helpers.config import read_config
+from src.models.models import engine, Order
+from sqlalchemy.orm import sessionmaker
 from PyQt5 import QtCore, QtWidgets, QtGui, QtPrintSupport
 from datetime import datetime, timedelta
 
@@ -36,8 +38,10 @@ class POWindow(Ui_MainWindow):
         self.actionView_Distro.triggered.connect(self.open_po_table_view)
         self.CustomerBox.activated.connect(self.po_list_filter)
         self.AgeSlider.valueChanged.connect(self.po_list_filter)
-        self.po_db = PurchaseOrderDB(self.settings['File Paths']['PO Database File'])
-        self.po_model = POModel(self.po_db.queryall(), self.parent, self)
+        #self.po_db = PurchaseOrderDB(self.settings['File Paths']['PO Database File'])
+
+        self.db = sessionmaker(bind=engine)()
+        self.po_model = POModel(self.db.query(Order).order_by(Order.po_number).all(), self.parent, self)
         self.po_model.parent_form = self
         self.po_model.layoutChanged.connect(self.insert_combo_boxes)
         self.POTable.setModel(self.po_model)
@@ -83,12 +87,17 @@ class POWindow(Ui_MainWindow):
         po_list = []
         counter = 0
         tdiff = (self.AgeSlider.value() * 30) + 30
+        target_date = datetime.now() - timedelta(days=tdiff)
         self.DaysLabel.setText(str(tdiff))
-        status = []
+        status = ['']
         for num in range(len(self.status_boxes)):
             if self.status_boxes[num].isChecked() == True:
                 status.append(self.settings['Statuses'][num])
-        self.po_model.po_list = self.po_db.queryfilters(customer, tdiff, status)
+        self.po_model.po_list = (self.db.query(Order)
+                                 .filter(Order.customer == customer)
+                                 .filter(Order.status.in_(status))
+                                 .filter(Order.create_date >= target_date)
+                                 .all())
         self.po_model.resetInternalData()
         self.POTable.model().modelReset.emit()
         self.insert_combo_boxes()

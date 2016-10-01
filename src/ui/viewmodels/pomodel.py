@@ -8,10 +8,10 @@ class POModel(QtCore.QAbstractTableModel):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         self.po_list = po_list
         self.mainform = mainform
-        self.attr = ['customer', 'po_number', 'label', 'status', 'dept', 'total_cost', 'shipped_cost',
-                     'start_ship', 'cancel_ship', 'creation_date']
-        self.headers = ['Customer', 'PO#', 'Label', 'Status', 'Department', 'Total Cost', 'Shipped Cost',
-                        'Start Date', 'Cancel Date', 'Create Date']
+        self.attr = ['customer', 'po_number', 'label', 'status', 'dept_number', 'total_cost',
+                     'shipped_cost', 'start_date', 'cancel_date', 'create_date']
+        self.headers = ['Customer', 'PO#', 'Label', 'Status', 'Department', 'Total Cost',
+                        'Shipped Cost', 'Start Date', 'Cancel Date', 'Create Date']
 
     def flags(self, index):
         if index.isValid() and index.column() in [2,3]:
@@ -39,25 +39,25 @@ class POModel(QtCore.QAbstractTableModel):
         elif role != QtCore.Qt.DisplayRole:
             return QtCore.QVariant()
         else:
+            attr = getattr(self.po_list[index.row()], self.attr[index.column()])
             try:
-                return QtCore.QVariant(getattr(self.po_list[index.row()], self.attr[index.column()]).strftime("%m/%d/%Y"))
+                return QtCore.QVariant(attr.strftime("%m/%d/%Y"))
             except AttributeError:
-                return QtCore.QVariant(getattr(self.po_list[index.row()], self.attr[index.column()]))
+                return QtCore.QVariant(attr)
 
     def setData(self, index, value, role = QtCore.Qt.EditRole):
-        print("Calling with %s" % value)
         if index.isValid() and role == QtCore.Qt.EditRole:
             po = self.po_list[index.row()]
             if index.column() >= len(self.attr) - 3:
                 try:
                     setattr(po, self.attr[index.column()], datetime.strptime(value, "%m/%d/%Y"))
-                    print("Value is good")
                     self.mainform.po_db.update(po)
                 except ValueError:
                     print("Invalid date format")
             else:
                 setattr(po, self.attr[index.column()], value)
-                self.mainform.po_db.update(po)
+                #self.mainform.db.update(po)
+                self.mainform.db.commit()
             return True
 
     def sort(self, int, order = QtCore.Qt.AscendingOrder):
