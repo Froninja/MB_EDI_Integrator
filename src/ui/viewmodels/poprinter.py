@@ -1,17 +1,16 @@
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
-import operator
 
 class POPrintModel(QtCore.QAbstractTableModel):
     def __init__(self, po, parent, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         self.po = po
-        self.store_list = sorted(self.po.stores.values(), key=operator.attrgetter('store_num'))
+        self.store_list = sorted(self.po.stores, key=lambda store: store.store_number)
         self.item_list = []
         for store in self.store_list:
-            for item in store.items.values():
+            for item in store.items:
                 if item.upc not in [item.upc for item in self.item_list]:
                     self.item_list.append(item)
-        self.item_list.sort(key=operator.attrgetter('upc'))
+        self.item_list.sort(key=lambda item: item.style)
 
     def rowCount(self, parent = QtCore.QModelIndex()):
         return len(self.item_list) + 1
@@ -28,7 +27,7 @@ class POPrintModel(QtCore.QAbstractTableModel):
             elif int == 2:
                 return QtCore.QVariant("Total")
             else:
-                return QtCore.QVariant(self.store_list[int - 3].store_num)
+                return QtCore.QVariant(self.store_list[int - 3].store_number)
         return QtCore.QAbstractTableModel.headerData(self, int, orientation, role)
 
     def data(self, index, role = QtCore.Qt.DisplayRole):
@@ -41,37 +40,39 @@ class POPrintModel(QtCore.QAbstractTableModel):
                 elif index.column() == 2:
                     i_list = []
                     for store in self.store_list:
-                        i_list += [item for item in store.items.values()]
-                    return QtCore.QVariant(sum([item.total_qty for item in i_list]))
+                        i_list += [item for item in store.items]
+                    return QtCore.QVariant(sum([item.qty for item in i_list]))
                 else:                    
                     store = self.store_list[index.column() - 3]
-                    return QtCore.QVariant(sum([item.total_qty for item in store.items.values()]))
+                    return QtCore.QVariant(sum([item.qty for item in store.items]))
             elif index.column() == 0:
                 return QtCore.QVariant(self.item_list[index.row()].upc)
             elif index.column() == 1:
-                return QtCore.QVariant(self.item_list[index.row()].style_num)
+                return QtCore.QVariant(self.item_list[index.row()].style)
             elif index.column() == 2:
-                upc = self.item_list[index.row()].upc
-                return QtCore.QVariant(sum([store.items[upc].total_qty for store in self.store_list if upc in store.items]))
-            #elif index.row() == len(self.item_list) and index.column() > 2:
+                i_list = []
+                for store in self.store_list:
+                    i_list += [item for item in store.items]
+                upc = self.item_list[index.row()].upc       
+                return QtCore.QVariant(sum([item.qty for item in i_list if item.upc == upc]))
             else:
                 item = self.item_list[index.row()]
                 store = self.store_list[index.column() - 3]
-                if item.upc in store.items.keys():
-                    return QtCore.QVariant(store.items[item.upc].total_qty)
+                if item in store.items:
+                    return QtCore.QVariant(item.qty)
                 else:
                     return QtCore.QVariant('')
 
     def sort(self, int, order = QtCore.Qt.AscendingOrder):
         self.layoutAboutToBeChanged.emit()
         if order != QtCore.Qt.DescendingOrder and int == 0:
-            self.item_list.sort(key=operator.attrgetter('upc'), reverse=True)
+            self.item_list.sort(key=lambda item: item.upc, reverse=True)
         elif int == 0:
-            self.item_list.sort(key=operator.attrgetter('upc'))
+            self.item_list.sort(key=lambda item: item.upc)
         elif order != QtCore.Qt.DescendingOrder and int == 1:
-            self.item_list.sort(key=operator.attrgetter('style_num'), reverse=True)
+            self.item_list.sort(key=lambda item: item.style, reverse=True)
         elif int == 1:
-            self.item_list.sort(key=operator.attrgetter('style_num'))
+            self.item_list.sort(key=lambda item: item.style)
         self.layoutChanged.emit()
 
 class Ui_POPrintView(object):

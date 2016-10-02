@@ -1,4 +1,5 @@
 from src.models.purchaseorder import PurchaseOrder, Store, Item
+from src.models.models import Order, Store, Item
 from PyQt5 import QtCore, QtWidgets
 
 class TreeNode(object):
@@ -67,6 +68,7 @@ class ModelNode(TreeNode):
 
     def _getChildren(self):
         try:
+            print(self.ref)
             return [ModelNode(elem, self, index) for index, elem in enumerate(self.ref.stores.values())]
         except AttributeError:
             try:
@@ -76,21 +78,21 @@ class ModelNode(TreeNode):
 
 class StoreModel(TreeModel):
     def __init__(self, stores):
-        self.stores = sorted(stores, key=lambda store: store.store_num)
+        self.stores = sorted(stores, key=lambda store: store.store_number)
         TreeModel.__init__(self)
         self.headers = ['Store/UPC #', 'Style Number', 'Cost', 'Total Qty', 'Shipped Cost']
-        self.store_attr = ['store_num', '', 'total_cost', 'total_qty', 'shipped_cost']
-        self.item_attr = ['upc', 'style_num', 'cost', 'total_qty', '']
+        self.store_attr = ['store_number', '', 'total_cost', 'total_qty', 'shipped_cost']
+        self.item_attr = ['upc', 'style', 'cost', 'qty', '']
         self.parent_form = ''
 
     def flags(self, index):
-        if isinstance(index.internalPointer().ref, PurchaseOrder) and index.column() == 1:
+        if isinstance(index.internalPointer().ref, Order) and index.column() == 1:
             return QtCore.Qt.ItemIsEditable | super().flags(index)
         else:
             return super().flags(index)
 
     def _getRootNodes(self):
-        return [ModelNode(elem, None, index) for index, elem in enumerate(self.stores)]
+        return [ModelNode(store, None, store.store_number) for store in self.stores]
 
     def columnCount(self, parent):
         return len(self.headers)

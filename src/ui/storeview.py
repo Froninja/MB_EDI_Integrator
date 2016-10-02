@@ -11,7 +11,7 @@ class StoreViewWindow(Ui_StoreViewWindow):
         self.parent.setWindowTitle("MB EDI PO# %s" % po.po_number)
         self.parent.setWindowIcon(QtGui.QIcon("Resources\\MBIcon.bmp"))
         self.po = po
-        self.model = StoreModel(list(po.stores.values()))
+        self.model = StoreModel(list(po.stores))
         self.StoreView.setModel(self.model)
         self.actionExport_Spreadsheet.triggered.connect(self.export_for_ss)
 

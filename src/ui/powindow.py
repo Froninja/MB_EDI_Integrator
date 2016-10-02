@@ -197,25 +197,25 @@ class POPrinter(QtCore.QObject):
 
         cursor.insertBlock(info_block)
         cursor.setCharFormat(info_text)
-        cursor.insertText("Start Ship Date: %s\tCancel Date: %s" % (self.po.start_ship.strftime("%m/%d/%Y"),
-                                                                    self.po.cancel_ship.strftime("%m/%d/%Y")))
+        cursor.insertText("Start Ship Date: %s\tCancel Date: %s" % (self.po.start_date.strftime("%m/%d/%Y"),
+                                                                    self.po.cancel_date.strftime("%m/%d/%Y")))
         cursor.movePosition(QtGui.QTextCursor.NextBlock)
 
-        cursor.insertBlock(info_block)
-        cursor.insertText("Department: %s\t\tDiscount Required: %s\n" % (self.po.dept, self.po.discount))
-        cursor.movePosition(QtGui.QTextCursor.NextBlock)
+        #cursor.insertBlock(info_block)
+        #cursor.insertText("Department: %s\t\tDiscount Required: %s\n" % (self.po.dept_number, self.po.discount))
+        #cursor.movePosition(QtGui.QTextCursor.NextBlock)
 
         cursor.insertBlock(header_block)
         cursor.insertText("Stores")
-        for store in sorted(self.po.stores.values(), key=lambda store: store.store_num):
+        for store in sorted(self.po.stores, key=lambda store: store.store_number):
             cursor.insertBlock(style_block)
             cursor.setCharFormat(style_text)
-            cursor.insertText("Store#: %s\tTotal Cost Value: $%s\t Total Qty: %s\n" % (store.store_num,
-                                                                                       sum([item.cost * item.total_qty for item in store.items.values()]),
-                                                                                       sum([item.total_qty for item in store.items.values()])))
+            cursor.insertText("Store#: %s\tTotal Cost Value: $%s\t Total Qty: %s\n" % (store.store_number,
+                                                                                       sum([item.cost * item.qty for item in store.items]),
+                                                                                       sum([item.qty for item in store.items])))
             cursor.insertText("Items\n")
-            for item in sorted(store.items.values(), key=lambda item: item.style_num):
-                cursor.insertText("Style: %s\tUPC: %s\tUnit Cost: $%s\tQty: %s\n" % (item.style_num, item.upc,
-                                                                                     item.cost, item.total_qty))
+            for item in sorted(store.items, key=lambda item: item.style):
+                cursor.insertText("Style: %s\tUPC: %s\tUnit Cost: $%s\tQty: %s\n" % (item.style, item.upc,
+                                                                                     item.cost, item.qty))
 
         document.print_(printer)
