@@ -25,7 +25,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         parentNode = parent.internalPointer()
         if not parentNode.subNodes is None:
             return self.createIndex(row, column, parentNode.subNodes[row])
-        return None
+        return QtCore.QModelIndex()
 
     def getNodeFromIndex(self, index):    
         if index.isValid():
@@ -68,11 +68,16 @@ class ModelNode(TreeNode):
 
     def _getChildren(self):
         try:
-            print(self.ref)
-            return [ModelNode(elem, self, index) for index, elem in enumerate(self.ref.stores.values())]
+            node_list = []
+            for num in range(len(self.ref.items)):
+                node_list.append(ModelNode(self.ref.stores[num], self, num))
+            return node_list
         except AttributeError:
             try:
-                return [ModelNode(elem, self, index) for index, elem in enumerate(self.ref.items.values())]
+                node_list = []
+                for num in range(len(self.ref.items)):
+                    node_list.append(ModelNode(self.ref.items[num], self, num))
+                return node_list
             except AttributeError:
                 return None
 
@@ -92,7 +97,10 @@ class StoreModel(TreeModel):
             return super().flags(index)
 
     def _getRootNodes(self):
-        return [ModelNode(store, None, store.store_number) for store in self.stores]
+        node_list = []
+        for num in range(len(self.stores)):
+            node_list.append(ModelNode(self.stores[num], None, num))
+        return node_list
 
     def columnCount(self, parent):
         return len(self.headers)
