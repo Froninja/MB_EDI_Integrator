@@ -35,7 +35,7 @@ class Invoice(Base):
     customer = Column(String)
     po_number = Column(String)
     dept_number = Column(String)
-    store_numbr = Column(String)
+    store_number = Column(String)
     dc_number = Column(String)
     discount_code = Column(String)
     discount = Column(Integer)
@@ -54,6 +54,28 @@ class Invoice(Base):
                          cascade="all, delete")
     order = relationship('Order', back_populates='invoices')
     store = relationship('Store', back_populates='invoices')
+
+    def discount(self, discount_percent):
+        """Sets the discount value and EDI discount code based on the provided value"""
+        if discount_percent is None:
+            self.discount = 0
+        elif int(discount_percent) >= 0:
+            self.discount = int(discount_percent)
+        if discount_percent is None or int(discount_percent) == 0:
+            self.discount_code = "05"
+        else:
+            self.discount_code = "08"
+
+    def dept_number(self, memo_val, asset_dept, memo_dept):
+        """Sets the department number based on the settings provided"""
+        if memo_val is True or memo_val == 2:
+            self.dept_number = memo_dept.zfill(4)
+        else:
+            self.dept_number = asset_dept.zfill(4)
+
+    def get_totals(self):
+        self.total_cost = sum([item.cost * item.qty for item in self.items])
+        self.total_qty = sum([item.qty for item in self.items])
 
 class Store(Base):
     __tablename__ = 'Stores'

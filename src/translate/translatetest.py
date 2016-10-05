@@ -1,5 +1,6 @@
 from src.translate.translator import OutputTranslator
-from src.models.invoice import Invoice, Product
+#from src.models.invoice import Invoice, Product
+from src.models.models import Invoice, Item
 from datetime import datetime
 
 """Test values:
@@ -38,31 +39,30 @@ class TranslatorUnitTest(object):
         self.o.run([['59128', '6163130', 0, False]])
 
     def test_invoice(self):
-        inv = Invoice('59128')
+        inv = Invoice()
+        inv.invoice_number = '59128'
         inv.customer = 'Saks Fifth Avenue'
         inv.store_number = '0689'
         inv.tracking_number = '1ZW885Y21349335867'
         inv.ship_date = datetime(2015, 12, 15)
         inv.discount_code = '05'
-        inv.discount_percent = 0
-        inv.sscc = '803276200000591289'
-        inv.purchase_order_number = '6163130'
-        inv.department_number = '0162'
-        inv.distribution_center = '0185'
-        inv.item_count = 7
+        inv.discount = 0
+        inv.sscc_number = '803276200000591289'
+        inv.po_number = '6163130'
+        inv.dept_number = '0162'
+        inv.dc_number = '0185'
         inv.total_cost = 4575
         inv.total_qty = 7
         inv.address1 = 'ONE WALDENBOOKS DRIVE'
         inv.address2 = 'DC# 185 STORE# 689'
-        inv.city = 'LA VERGNE'
-        inv.state = 'TN'
-        inv.zip_code = '37086'
-        p1 = Product('CB1779- -Y-02-42.0')
+        inv.city_state_zip = 'LA VERGNE, TN 37086'
+        p1 = Item()
+        p1.style = 'CB1779- -Y-02-42.0'
         p1.upc = '8032762238027'
-        p1.qty_each = 1
-        p1.unit_cost = 795
+        p1.qty = 1
+        p1.cost = 795.0
         inv.items.append(p1)
-        p2 = Product('OB1234- -Y-02-0')
+        #p2 = Product('OB1234- -Y-02-0')
 
         self.test_invoices.append(inv)
 
@@ -93,30 +93,26 @@ class TranslatorUnitTest(object):
             print("Discount Code PASS")
         else:
             print("\n===Discount Code FAIL===\n===Was %s; Should be %s===\n" % (inv.discount_code, test_inv.discount_code))
-        if inv.discount_percent == test_inv.discount_percent:
+        if inv.discount == test_inv.discount:
             print("Discount Percent PASS")
         else:
             print("\n===Discount Percent FAIL===\n===Was %s; Should be %s===\n" % (inv.discount_percent, test_inv.discount_percent))
-        if inv.sscc == test_inv.sscc:
+        if inv.sscc_number == test_inv.sscc_number:
             print("SSCC PASS")
         else:
             print("\n===SSCC FAIL===\n===Was %s; Should be %s===\n" % (inv.sscc, test_inv.sscc))
-        if inv.purchase_order_number == test_inv.purchase_order_number:
+        if inv.po_number == test_inv.po_number:
             print("PO Number PASS")
         else:
-            print("\n===PO Number FAIL===\n===Was %s; Should be %s===\n" % (inv.purchase_order_number, test_inv.purchase_order_number))
-        if inv.department_number == test_inv.department_number:
+            print("\n===PO Number FAIL===\n===Was %s; Should be %s===\n" % (inv.po_number, test_inv.po_number))
+        if inv.dept_number == test_inv.dept_number:
             print("Dept Number PASS")
         else:
             print("\n===Dept Number FAIL===\n===Was %s; Should be %s===\n" % (inv.department_number, test_inv.department_number))
-        if inv.distribution_center == test_inv.distribution_center:
+        if inv.dc_number == test_inv.dc_number:
             print("DC Number PASS")
         else:
-            print("\n===DC Number FAIL===\n===Was %s; Should be %s===\n" % (inv.distribution_center, test_inv.distribution_center))
-        if inv.item_count == test_inv.item_count:
-            print("Item Count PASS")
-        else:
-            print("\n===Item Count FAIL===\n===Was %s; Should be %s===\n" % (inv.item_count, test_inv.item_count))
+            print("\n===DC Number FAIL===\n===Was %s; Should be %s===\n" % (inv.dc_number, test_inv.dc_number))
         if inv.total_cost == test_inv.total_cost:
             print("Total Cost PASS")
         else:

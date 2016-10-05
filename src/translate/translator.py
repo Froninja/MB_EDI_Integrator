@@ -4,7 +4,8 @@ from PyQt5 import QtWidgets, QtCore
 import pymssql
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from src.models.invoice import Invoice, Product
+from src.models.invoice import Product
+from src.models.models import Invoice, Item
 from src.models.output import OutputRecord
 from src.db.podb import PurchaseOrderDB
 from src.ui.warnings import (OverWriteDialog, UPCWarningDialog,
@@ -56,19 +57,24 @@ of invoices
         print("%s Starting invoice generation" % datetime.now())
         for row in inv_array:
             if len(row[0]) > 0:
-                invoice = Invoice(row[0])
-                invoice.purchase_order_number = row[1]
+                invoice = Invoice(invoice_number=row[0],
+                                  customer=self.customer,
+                                  po_number=row[1])
                 invoice.discount(row[2])
-                invoice.customer = self.customer
-                invoice.get_dept_num(row[3], self.customer_settings['Asset Department'],
+
+                #invoice = Invoice(row[0])
+                #invoice.purchase_order_number = row[1]
+                #invoice.discount(row[2])
+                #invoice.customer = self.customer
+                invoice.dept_number(row[3], self.customer_settings['Asset Department'],
                                      self.customer_settings['Memo Department'])
                 self.invoice_list.append(invoice)
                 print("%s Created Invoice# %s, with PO# %s, Dept# %s, and discount %s"
-                      % (datetime.now(), invoice.invoice_number, invoice.purchase_order_number,
-                         invoice.department_number, invoice.discount_percent))
+                      % (datetime.now(), invoice.invoice_number, invoice.po_number,
+                         invoice.dept_number, invoice.discount))
 
         self.invoice_list = sorted(sorted(self.invoice_list, key=lambda inv: inv.store_number),
-                                   key=lambda inv: inv.purchase_order_number)
+                                   key=lambda inv: inv.po_number)
         print("%s Ending generation. Generated %s invoices"
               % (datetime.now(), len(self.invoice_list)))
         self.progress += 1
@@ -76,7 +82,8 @@ of invoices
     def get_ship_data(self):
         print("%s Querying shipping info" % datetime.now())
         for invoice in self.invoice_list:
-            invoice.shipping_information(self.settings['File Paths']['Shipping Log'])
+            #invoice.shipping_information(self.settings['File Paths']['Shipping Log'])
+            get_shipping_info(invoice, self.settings['File Paths']['Shipping Log'])
             if invoice.tracking_number == '':
                 self.w = TrackingWarningDialog(invoice.invoice_number)
                 self.w.exec_()
@@ -86,7 +93,7 @@ of invoices
                                                                ['Shipping Log'])
                 else:
                     return False
-            invoice.get_sscc()
+            invoice.sscc_number = generate_sscc(invoice.invoice_number)
         print("%s Shipping info complete" % datetime.now())
         self.progress += 1
         return True
@@ -193,15 +200,19 @@ of invoices
         query = self.get_items()
         for invoice in self.invoice_list:
             for row in query[invoice.invoice_number]:
-                item = Product('{}-{}-{}-{}-{}'.format(row['codmod'], row['codpiet'],
-                                                       row['colore'], row['codsup'],
-                                                       str(row['lungh'])))
-
-                item.qty_each = row['qtamov']
-                item.unit_cost = row['valorev']/item.qty_each
+                #item = Product('{}-{}-{}-{}-{}'.format(row['codmod'], row['codpiet'],
+                #                                       row['colore'], row['codsup'],
+                #                                       str(row['lungh'])))
+                item = Item(style=(row['codmod'] + '-' + row['codpiet'] + '-' +
+                                   row['colore'] + '-' + row['codsup'] + '-' + str(row['lungh'])),
+                            qty=row['qtamov'],
+                            cost=row['valorev']/row['qtamov'])
+                #item.qty_each = row['qtamov']
+                #item.unit_cost = row['valorev']/item.qty_each
                 if self.customer_settings['Description Required'] == 'True':
                     item = self.get_descriptions(item, invoice)
-                invoice.add_item(item)
+                invoice.items.append(item)
+            invoice.get_totals()
         print("%s Items assigned" % datetime.now())
         self.progress += 1
 
@@ -273,21 +284,23 @@ of invoices
         for invoice in self.invoice_list:
             for item in invoice.items:
                 try:
-                    item.upc = query[item.long_style]['BarCode']
-                    item.upc_exception_check(self.settings['File Paths']['UPC Exception Log'],
-                                             invoice.customer)
+                    item.upc = query[item.style]['BarCode']
+                    #item.upc_exception_check(self.settings['File Paths']['UPC Exception Log'],
+                    #                         invoice.customer)
+                    item.upc = check_upc_exceptions(item, invoice.customer,
+                                                    self.settings['File Paths']['UPC Exception Log'])
                 except KeyError:
-                    item.upc_exception_check(self.settings['File Paths']['UPC Exception Log'],
-                                             invoice.customer)
+                    item.upc = check_upc_exceptions(item, invoice.customer,
+                                                    self.settings['File Paths']['UPC Exception Log'])
                 if item.upc == '' or item.upc is None:
-                    self.w = UPCWarningDialog(item.long_style, invoice.invoice_number)
+                    self.w = UPCWarningDialog(item.style, invoice.invoice_number)
                     self.w.exec_()
                     if self.w.confirmed is True:
                         item.upc = self.w.upc.strip('\r').strip('\n')
                     else:
                         return False
-                item.upc_exception_check(self.settings['File Paths']['UPC Exception Log'],
-                                         invoice.customer)
+                item.upc = check_upc_exceptions(item, invoice.customer,
+                                                self.settings['File Paths']['UPC Exception Log'])
         print("%s UPCs assigned" % datetime.now())
         self.progress += 1
         return True
@@ -343,18 +356,50 @@ of invoices
         except AttributeError:
             output = output.replace('ShipDate', datetime.now().strftime('%Y%m%d'))
         output = output.replace('DiscCode', invoice.discount_code)
-        output = output.replace('Disc', str(invoice.discount_percent))
-        output = output.replace('SSCC', invoice.sscc)
-        output = output.replace('PO', invoice.purchase_order_number)
-        output = output.replace('Dept', invoice.department_number)
-        output = output.replace('DC', invoice.distribution_center)
+        output = output.replace('Disc', str(invoice.discount))
+        output = output.replace('SSCC', invoice.sscc_number)
+        output = output.replace('PO', invoice.po_number)
+        output = output.replace('Dept', invoice.dept_number)
+        output = output.replace('DC', invoice.dc_number)
         output = output.replace('Qty', str(invoice.total_qty))
         try:
-            output = output.replace('CreateDate', invoice.po_create_date.strftime("%Y/%m/%d"))
+            output = output.replace('CreateDate', invoice.create_date.strftime("%Y/%m/%d"))
         except AttributeError:
             output = output.replace('CreateDate', datetime.now().strftime("%Y/%m/%d"))
         return output
 
+def get_shipping_info(invoice, ship_log):
+    for line in reversed(open(ship_log, 'r').readlines()):
+        line = line.replace('"', '').split(',')
+        inv_cell = line[10].split(' ')
+        for seg in inv_cell:
+            if len(seg) == 5 and seg == str(invoice.invoice_number):
+                invoice.tracking_number = line[9]
+                invoice.ship_date = datetime.strptime(line[0], '%Y%m%d')
+                invoice.address_1 = line[2]
+                invoice.address_2 = line[3]
+                invoice.city_state_zip = line[4] + ', ' + line[5] + ' ' + line[6][:5]
+
+def generate_sscc(inv_num):
+    """Generates a GS1 18 digit SSCC number from the supplied invoice number"""
+    sscc_string = str(80327620000000000 + int(inv_num))
+    check_sum = 0
+    # pyLint: disable=consider-using-enumerate
+    for num in range(len(sscc_string)):
+        if num % 2 == 0:
+            check_sum += int(sscc_string[num]) * 3
+        else:
+            check_sum += int(sscc_string[num])
+    check_digit = ((check_sum + 9) // 10 * 10) - check_sum
+    return sscc_string + str(check_digit)
+
+def check_upc_exceptions(item, customer, exception_log):
+    with open(exception_log, 'r') as exception_list:
+        for line in exception_list:
+            line = line.rstrip('\n').split(',')
+            if line[:2] == [customer, item.style]:
+                return line[2]
+    return item.upc
 
 def get_output_templates():
     """Returns templates for formatting header, invoice, item output"""
@@ -368,18 +413,18 @@ def get_output_templates():
 
 def output_item_string(template, item):
     """Returns a formatted string from the supplied template and invoice"""
-    output = template.replace('Style', item.long_style)
+    output = template.replace('Style', item.style)
     output = output.replace('UPC', item.upc)
-    output = output.replace('Qty', str(int(item.qty_each)))
-    output = output.replace('Cost', str(item.unit_cost))
-    output = output.replace('Color', item.color)
-    output = output.replace('Size', item.size)
-    output = output.replace('Desc', item.description)
+    output = output.replace('Qty', str(int(item.qty)))
+    output = output.replace('Cost', str(item.cost))
+    #output = output.replace('Color', item.color)
+    #output = output.replace('Size', item.size)
+    #output = output.replace('Desc', item.description)
     return output
 
 def add_output_row(session, invoice):
     """Creates an OutputRecord for the given invoice and adds it to the provided session"""
-    output = OutputRecord(inv_num=invoice.invoice_number,
+    """output = OutputRecord(inv_num=invoice.invoice_number,
                           po_num=invoice.purchase_order_number,
                           store_num=invoice.store_number,
                           store_name=invoice.store_name,
@@ -392,8 +437,8 @@ def add_output_row(session, invoice):
                           address1=invoice.address1,
                           address2=invoice.address2,
                           city_state_zip=(invoice.city + ', ' + invoice.state
-                                          + ' ' + invoice.zip_code))
-    session.add(output)
+                                          + ' ' + invoice.zip_code))"""
+    session.add(invoice)
 
 def get_sql_connection(conn_string):
     """
