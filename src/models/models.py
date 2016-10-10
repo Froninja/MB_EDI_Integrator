@@ -36,6 +36,7 @@ class Invoice(Base):
     po_number = Column(String)
     dept_number = Column(String)
     store_number = Column(String)
+    store_name = Column(String)
     dc_number = Column(String)
     discount_code = Column(String)
     discount = Column(Integer)
@@ -76,6 +77,14 @@ class Invoice(Base):
     def get_totals(self):
         self.total_cost = sum([item.cost * item.qty for item in self.items])
         self.total_qty = sum([item.qty for item in self.items])
+
+    def __repr__(self):
+        return ("Invoice: " + self.invoice_number + ": for " + self.customer + " on PO #"
+                + str(self.po_number) + "; shipped on " + str(self.ship_date) + " with tracking #"
+                + str(self.tracking_number) + " and SSCC " + str(self.sscc_number) + "; total qty: "
+                + str(self.total_qty) + ", total cost: " + str(self.total_cost) + "; to store #"
+                + str(self.store_number) + " (" + str(self.store_name) + ") " + str(self.address_1)
+                + ", " + str(self.address_2) + ", " + str(self.city_state_zip))
 
 class Store(Base):
     __tablename__ = 'Stores'
