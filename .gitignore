@@ -57,3 +57,6 @@ MB_EDI_Integrator.pyproj
 /PO_Database
 /bin/PO_Database
 /Config - Copy.yaml
+/.cache/v/cache
+/bin/Config.yaml
+/PoDatabase.db

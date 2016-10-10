@@ -1,7 +1,7 @@
 import sys
-from ui.pyuic.UiLauncherDialog import Ui_Launcher
-from ui.powindow import POWindow
-from ui.shipwindow import ShippingWindow
+from src.ui.pyuic.UiLauncherDialog import Ui_Launcher
+from src.ui.powindow import POWindow
+from src.ui.shipwindow import ShippingWindow
 from PyQt5 import QtWidgets, QtGui
 
 

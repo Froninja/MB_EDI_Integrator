@@ -1,5 +1,4 @@
 # MB_EDI_Integrator
-MB EDI Integrator
 
 A custom GUI solution for integrating an MS SQL ERP backend with an EDI translator/transmitter
 
