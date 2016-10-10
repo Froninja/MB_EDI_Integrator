@@ -57,7 +57,7 @@ class POWarningDialog(QtWidgets.QDialog):
         """Sets the po_num attribute to the user entered text, sets the confirmed attribute to
         true, and closes the dialog"""
         #if self.input_box.text() != '' or self.input_box.text() != None:
-        self.po_num = self.input_box.text()
+        self.po_num = str(self.input_box.text()).strip()
         self.confirmed = True
         self.close()
         #else:
@@ -95,7 +95,7 @@ class UPCWarningDialog(QtWidgets.QDialog):
 
     def confirm_clicked(self):
         if self.input_box.text() != '' or self.input_box.text() != None:
-            self.upc = self.input_box.text()
+            self.upc = str(self.input_box.text()).strip()
             self.confirmed = True
             self.close()
         else:
@@ -129,7 +129,7 @@ class TrackingWarningDialog(QtWidgets.QDialog):
 
     def confirm_clicked(self):
         if self.input_box.text() != '' or self.input_box.text() != None:
-            self.tracking = self.input_box.text()
+            self.tracking = str(self.input_box.text()).strip()
             self.confirmed = True
             self.close()
         else:
@@ -178,9 +178,9 @@ class StoreWarningDialog(QtWidgets.QDialog):
 
     def confirm_clicked(self):
         if self.store_num_box.text() != '' and self.dc_num_box.text() != '':
-            self.store_num = self.store_num_box.text().zfill(4)
-            self.dc_num = self.dc_num_box.text().zfill(4)
-            self.store_name = self.store_name_box.text()
+            self.store_num = str(self.store_num_box.text().zfill(4)).strip()
+            self.dc_num = str(self.dc_num_box.text().zfill(4)).strip()
+            self.store_name = str(self.store_name_box.text()).lstrip().rstrip()
             self.confirmed = True
             self.close()
         else:
@@ -255,7 +255,7 @@ class UPCPOWarningDialog(Ui_Dialog):
         self.setupUi(parent)
         self.populate_table(store)
         self.WarningLabel.setText("UPC %s (Style %s) on invoice# %s is not allocated to store# %s on PO# %s" %
-                                  (item.upc, item.long_style, inv_num, store.store_num, po_num))
+                                  (item.upc, item.style, inv_num, store.store_number, po_num))
         self.IgnoreButton.clicked.connect(self.ignore_clicked)
         self.ConfirmButton.clicked.connect(self.confirm_clicked)
         self.CancelButton.clicked.connect(self.cancel_clicked)
@@ -263,12 +263,12 @@ class UPCPOWarningDialog(Ui_Dialog):
     def populate_table(self, store):
         self.tableWidget.setHorizontalHeaderLabels(['Style', 'UPC', 'Cost', 'Qty'])
         row = 0
-        self.tableWidget.setRowCount(len(store.items.values()))
-        for item in store.items.values():
-            self.tableWidget.setItem(row, 0, QtWidgets.QTableWidgetItem(item.style_num))
+        self.tableWidget.setRowCount(len(store.items))
+        for item in store.items:
+            self.tableWidget.setItem(row, 0, QtWidgets.QTableWidgetItem(item.style))
             self.tableWidget.setItem(row, 1, QtWidgets.QTableWidgetItem(item.upc))
             self.tableWidget.setItem(row, 2, QtWidgets.QTableWidgetItem('$' + str(item.cost)))
-            self.tableWidget.setItem(row, 3, QtWidgets.QTableWidgetItem(str(item.total_qty)))
+            self.tableWidget.setItem(row, 3, QtWidgets.QTableWidgetItem(str(item.qty)))
             row += 1
 
     def ignore_clicked(self):

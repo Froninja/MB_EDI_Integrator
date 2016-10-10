@@ -64,12 +64,11 @@ class ShippingWindow(Ui_MainWindow):
         self.ShiplogExecuteButton.clicked.connect(self.shiplog_execute)
         self.po_db = PurchaseOrderDB(self.settings['File Paths']['PO Database File'])
         self.invoice_table_setup()
-        #self.self_test()
+        self.self_test()
 
     def self_test(self):
         thread1 = ProgressThread("Running Self-Test")
         t = TranslatorUnitTest(self.settings)
-        t.o.initiate_db()
         thread1.start()
         t.run()
         t.test()
@@ -131,7 +130,6 @@ class ShippingWindow(Ui_MainWindow):
         t = TranslatorUnitTest(self.settings)
         o = OutputTranslator(self.CustomerBox.currentText(), self.settings)
         o.get_customer_settings()
-        o.initiate_db()
         array = []
         for row in range(self.InvoiceTable.rowCount()):
             if self.InvoiceTable.item(row, 0) != None and self.InvoiceTable.item(row, 0) != '':

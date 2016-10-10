@@ -8,7 +8,7 @@ class TreeNode(object):
         self.row = row
         self.subNodes = self._getChildren()
 
-    def _getChildren():
+    def _getChildren(self):
         raise NotImplementedError()
 
 class TreeModel(QtCore.QAbstractItemModel):
