@@ -98,9 +98,9 @@ class DbValidater(object):
             #if store.shipped_cost is None:
                 #store.shipped_cost = 0.0
                 #store.shipped_qty = 0
-            store.shipped_cost += invoice.total_cost
+            store.shipped_cost = float(str.shipped_cost) + invoice.total_cost
             #store.shipped_retail += invoice.total_retail
-            store.shipped_qty += invoice.total_qty
+            store.shipped_qty = int(store.shipped_qty) + invoice.total_qty
             store.invoices.append(invoice)
             #self.database.update(order)
 
@@ -153,7 +153,7 @@ def validate_upc_warning(dialog):
 def create_qty_warning_dialog(item, store, inv_num, po_num):
     """Item: item, Store: store, string: inv_num, string: po_num -> WarningDialog"""
     return WarningDialog("Qty of style %s on invoice# %s does not match store# %s on PO# %s"
-                         % (item.long_style, store.store_num, inv_num, po_num),
+                         % (item.style, store.store_number, inv_num, po_num),
                          detail=("Qty on store# %s: %s"
-                                 % (store.store_num, [st_it.qty for st_it in
+                                 % (store.store_number, [st_it.qty for st_it in
                                                       store.items if st_it.upc == item.upc][0])))

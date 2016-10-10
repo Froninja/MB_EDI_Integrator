@@ -19,7 +19,8 @@ def mock_settings():
     settings = {
         'File Paths': {
             'Destination Log': 'td_log.txt',
-            'UPC Exception Log': 'tu_log.txt'
+            'UPC Exception Log': 'tu_log.txt',
+            'Shipping Log': r'L:\Shipping\BUSA SHIPMENTS\UPS_EACH_SHIPMENT_EXPORT.csv'
             },
         'SQL Settings': {
             'Invoice Query': 'SELECT DocNum, Date, Style, Stone, Color, Finish, Length, Pieces, Cost, Destination, RingUpc, Upc FROM EDI_Invoice_Info WHERE Date >= %s AND DocNum IN ({})',
@@ -118,10 +119,10 @@ class TestGetShippingInfo(object):
         self.test_invoice = Invoice(invoice_number='59128',
                                     customer='Saks Fifth Avenue',
                                     sscc_number='803276200000591289',
-                                    tracking_number='1ZW885T21349335867',
+                                    tracking_number='1ZW885Y21349335867',
                                     ship_date=datetime(2015, 12, 15),
-                                    address_1='One Waldenbooks Drive',
-                                    address_2='DC# 185 Store# 689',
+                                    address_1='ONE WALDENBOOKS DRIVE',
+                                    address_2='DC# 185 STORE# 689',
                                     city_state_zip='LA VERGNE, TN 37086')
 
     def test_get_shipping_info(self):

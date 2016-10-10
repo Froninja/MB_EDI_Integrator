@@ -61,8 +61,6 @@ of invoices
                       % (datetime.now(), invoice.invoice_number, invoice.po_number,
                          invoice.dept_number, invoice.discount))
 
-        self.invoice_list = sorted(sorted(self.invoice_list, key=lambda inv: inv.store_number),
-                                   key=lambda inv: inv.po_number)
         print("%s Ending generation. Generated %s invoices"
               % (datetime.now(), len(self.invoice_list)))
         self.progress += 1
@@ -146,10 +144,10 @@ def get_shipping_info(invoice_list: list, settings: dict):
     """Returns a new sorted invoice list populated with data from the shipping log"""
     for invoice in invoice_list:
         invoice = assign_shipping_info(invoice, settings['File Paths']['Shipping Log'])
-        invoice.sscc = generate_sscc(invoice.invoice_number)
+        invoice.sscc_number = generate_sscc(invoice.invoice_number)
         if not invoice:
             return False
-    return sort_invoices(invoice_list)
+    return invoice_list
 
 def get_invoice_info(invoice_list: list, customer: str, settings: dict):
     """Returns a new sorted invoice list populated with data from the server"""
@@ -204,7 +202,7 @@ def get_store_info(invoice: Invoice, destination: str, settings: dict):
                 invoice.dc_number = row[3].zfill(4)
                 invoice.store_name = row[4]
     if invoice.store_number is None:
-        invoice = store_not_found(inv, destination, settings)
+        invoice = store_not_found(invoice, destination, settings)
     return invoice
 
 def store_not_found(invoice: Invoice, destination: str, settings: dict):
