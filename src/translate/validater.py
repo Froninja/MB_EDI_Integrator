@@ -9,9 +9,9 @@ class DbValidater(object):
     Helper class to check invoice values against the relevant POs in the database and update
     their shipping status
     """
-    def __init__(self, db_name, invoice_list):
+    def __init__(self, invoice_list, db_session):
         """db_name = valid Sqlite database path, invoice_list = [list of invoice objects]"""
-        self.database = sessionmaker(bind=engine)()
+        self.database = db_session
         self.invoice_list = invoice_list
         self.po_dict = dict()
         self.warning_dialog = None

@@ -18,6 +18,7 @@ of invoices
     def __init__(self, customer, settings, append=False, test=False):
         QtCore.QObject.__init__(self)
         self.progress = 0
+        self.database = get_session(settings['File Paths']['PO Database File'])
         self.customer = customer
         self.settings = settings
         self.invoice_list = []
@@ -27,8 +28,7 @@ of invoices
         self.validater = None
 
     def get_validater(self):
-        self.validater = DbValidater(self.settings['File Paths']['PO Database File'],
-                                     self.invoice_list)
+        self.validater = DbValidater(self.invoice_list, self.database)
 
     def run(self, inv_array):
         self.generate_invoices(inv_array)
@@ -84,9 +84,8 @@ of invoices
         else:
             output_string = ''
             mode = 'a'
-        session = get_session(self.settings['File Paths']['PO Database File'])
         for invoice in self.invoice_list:
-            add_output_row(session, invoice)
+            add_output_row(self.database, invoice)
             output_string += output_inv_string(inv_temp, invoice)
             for item in invoice.items:
                 output_string += output_item_string(item_temp, item)
@@ -96,7 +95,7 @@ of invoices
         with open(self.settings['File Paths']['MAPDATA Path'] + '\\'
                   + self.customer_settings['Invoice File'], mode) as file:
             file.write(output_string)
-        session.commit()
+        self.database.commit()
         print("%s Output successful" % datetime.now())
         self.progress += 1
 
