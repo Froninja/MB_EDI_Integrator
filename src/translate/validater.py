@@ -98,7 +98,7 @@ class DbValidater(object):
             #if store.shipped_cost is None:
                 #store.shipped_cost = 0.0
                 #store.shipped_qty = 0
-            store.shipped_cost = float(str.shipped_cost) + invoice.total_cost
+            store.shipped_cost = float(store.shipped_cost) + invoice.total_cost
             #store.shipped_retail += invoice.total_retail
             store.shipped_qty = int(store.shipped_qty) + invoice.total_qty
             store.invoices.append(invoice)
