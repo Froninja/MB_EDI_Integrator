@@ -27,6 +27,10 @@ class Item(Base):
     store = relationship('Store', back_populates='items')
     invoice = relationship('Invoice', back_populates='items')
 
+    def __repr__(self):
+        return ("Item: UPC " + self.upc + ", style " + self.style + ", cost: $" + self.cost
+                + ", retail: $" + self.retail + ", qty: " + self.qty)
+
 class Invoice(Base):
     __tablename__ = 'Invoices'
 
@@ -104,6 +108,10 @@ class Store(Base):
     items = relationship('Item', order_by=Item.style, back_populates='store',
                          cascade="all, delete")
     invoices = relationship('Invoice', order_by=Invoice.invoice_number, back_populates='store')
+
+    def __repr__(self):
+        return ("Store: store #" + self.store_number + ", DC #" + self.dc_number + ", cost $"
+                + self.total_cost + ", retail: $" + self.total_retail + ", qty: " + self.total_qty)
 
 class Order(Base):
     __tablename__ = 'Orders'
