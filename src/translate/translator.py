@@ -3,9 +3,8 @@ from datetime import datetime, date, timedelta
 from PyQt5 import QtWidgets, QtCore
 import pymssql
 import csv
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from src.models.models import Invoice, Item
+from src.db.db import get_session
 from src.ui.warnings import (OverWriteDialog, UPCWarningDialog,
                              TrackingWarningDialog, StoreWarningDialog, DescriptionWarningDialog,)
 from src.translate.validater import DbValidater
@@ -339,10 +338,4 @@ def get_conn_settings(conn_string):
     conn_list = [item.split('=') for item in conn_string.split(';')]
     return {item[0]: item[1] for item in conn_list}
 
-def get_session(db_file):
-    """Returns a Sqlalchemy session object for the provided database"""
-    return sessionmaker(bind=get_engine(db_file))()
 
-def get_engine(db_file):
-    """Returns a Sqlalchemy engine object for the provided database"""
-    return create_engine(r'sqlite:///' + db_file)
