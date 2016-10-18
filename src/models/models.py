@@ -28,8 +28,8 @@ class Item(Base):
     invoice = relationship('Invoice', back_populates='items')
 
     def __repr__(self):
-        return ("Item: UPC " + self.upc + ", style " + self.style + ", cost: $" + self.cost
-                + ", retail: $" + self.retail + ", qty: " + self.qty)
+        return ("Item: UPC " + self.upc + ", style " + str(self.style) + ", cost: $"
+                + str(self.cost) + ", retail: $" + str(self.retail) + ", qty: " + str(self.qty))
 
 class Invoice(Base):
     __tablename__ = 'Invoices'
@@ -110,8 +110,9 @@ class Store(Base):
     invoices = relationship('Invoice', order_by=Invoice.invoice_number, back_populates='store')
 
     def __repr__(self):
-        return ("Store: store #" + self.store_number + ", DC #" + self.dc_number + ", cost $"
-                + self.total_cost + ", retail: $" + self.total_retail + ", qty: " + self.total_qty)
+        return ("Store: store #" + self.store_number + ", DC #" + str(self.dc_number) + ", cost $"
+                + str(self.total_cost) + ", retail: $" + str(self.total_retail) + ", qty: "
+                + str(self.total_qty))
 
 class Order(Base):
     __tablename__ = 'Orders'
@@ -136,3 +137,19 @@ class Order(Base):
                           cascade="all, delete")
     invoices = relationship('Invoice', order_by=Invoice.invoice_number,
                             back_populates='order')
+
+    def total(self):
+        for store in self.stores:
+            store.total_cost = sum([item.cost for item in store.items])
+            store.total_retail = sum([item.retail for item in store.items])
+            store.total_qty = sum([item.qty for item in store.items])
+        self.total_cost = sum([store.total_cost for store in self.stores])
+        self.total_retail = sum([store.total_retail for store in self.stores])
+        self.total_qty = sum([store.total_qty for store in self.stores])
+
+    def __repr__(self):
+        return ("Order: PO #" + str(self.po_number) + ", customer: " + str(self.customer)
+                + ", department #" + str(self.dept_number) + ", cost: $" + str(self.total_cost)
+                + ", retail: $" + str(self.total_retail) + ", qty: " + str(self.total_qty)
+                + " units, created on " + str(self.create_date) + ", starting on "
+                + str(self.start_date) + ", cancelling on " + str(self.cancel_date))
