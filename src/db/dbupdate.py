@@ -9,7 +9,6 @@ class ExportReader(object):
     database with the resulting Order objects"""
     settings = dict()
     orders = dict()
-    database
 
     def __init__(self):
         self.settings = read_config('Config.yaml')
@@ -56,7 +55,7 @@ def create_item(row):
 def check_for_order(row, orders):
     """Returns an Order if that Order already exists in the orders dictionary. Otherwise, returns
     False"""
-    if row[1].lstrip('0') not in orders:
+    if row[1].lstrip('0') not in orders.keys():
         return False
     else:
         return orders[row[1].lstrip('0')]
@@ -85,7 +84,7 @@ def create_store(row):
 def create_order(row, settings):
     """Returns a new order using values from the row"""
     order = Order(customer=find_customer(row, settings),
-                  po_number=row[1],
+                  po_number=row[1].lstrip('0'),
                   dept_number=row[11],
                   start_date=datetime.strptime(row[2],'%m/%d/%Y'),
                   cancel_date=datetime.strptime(row[3],'%m/%d/%Y'),

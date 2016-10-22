@@ -72,17 +72,18 @@ def test_new_order():
     assert stringify_order(order) == stringify_order(test_order)
 
 def test_check_for_store_with_no_store():
-    test_order = create_order(mock_row())
+    test_order = create_order(mock_row(), mock_settings())
     assert check_for_store(mock_row(), test_order) == False
 
 def test_check_for_store_with_store():
     test_store = create_store(mock_row())
-    test_order = create_order(mock_row())
+    test_order = create_order(mock_row(), mock_settings())
     test_order.stores.append(test_store)
-    assert check_order_store(mock_row()), test_order).__repr__() == test_store.__repr__()
+    store = check_for_store(mock_row(), test_order)
+    assert store.__repr__() == test_store.__repr__()
 
 def test_check_for_order_with_order():
-    orders = { create_order(mock_row()) }
+    orders = { mock_row()[1]: create_order(mock_row(), mock_settings()) }
     assert stringify_order(check_for_order(mock_row(), orders)) == stringify_order(orders.values()[0])
 
 def test_check_for_order_with_no_order():
@@ -90,18 +91,18 @@ def test_check_for_order_with_no_order():
     assert check_for_order(mock_row(), orders) == False
 
 def test_compare_orders_same():
-    order1 = create_order(mock_row())
-    order2 = create_order(mock_row())
+    order1 = create_order(mock_row(), mock_settings())
+    order2 = create_order(mock_row(), mock_settings())
     assert compare_orders(order1, order2) == True
 
 def test_compare_orders_meaningfully_different():
-    order1 = create_order(mock_row())
-    order2 = create_order(mock_row())
+    order1 = create_order(mock_row(), mock_settings())
+    order2 = create_order(mock_row(), mock_settings())
     order2.total_cost = 700.0
     assert compare_orders(order1, order2) == False
 
 def test_compare_orders_meaningless_difference():
-    order1 = create_order(mock_row())
-    order2 = create_order(mock_row())
+    order1 = create_order(mock_row(), mock_settings())
+    order2 = create_order(mock_row(), mock_settings())
     order2.shipped_cost = 500.0
     assert compare_orders(order1, order2) == True
