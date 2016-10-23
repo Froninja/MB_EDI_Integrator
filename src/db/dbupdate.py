@@ -12,7 +12,7 @@ class ExportReader(object):
 
     def __init__(self):
         self.settings = read_config('Config.yaml')
-        self.database = get_session(self.settings['File Paths']['PO Databse File'])
+        self.database = get_session(self.settings['File Paths']['PO Database File'])
 
     def collect_orders(self):
         with open(self.settings['File Paths']['PO Export File']) as export:
@@ -32,10 +32,20 @@ class ExportReader(object):
                         store.items.append(item)
         for order in self.orders.values():
             order.total()
-            print(stringify_order(order))
 
     def check_orders(self):
-        self.database.query(Order).filter()
+        order_query = (self.database.query(Order)
+                       .filter(Order.po_number.in_(list(self.orders.keys()))))
+        for order in self.orders.values():
+            db_order = order_query.filter(Order.po_number == order.po_number).first()
+            if db_order is not None and compare_orders(order, db_order) is False:
+                order = copy_runtime_order_data(order, db_order)
+                print("Replacing Order: #" + order.po_number)
+                self.database.delete(db_order)
+                self.database.add(order)
+            elif db_order is None:
+                self.database.add(order)
+        self.database.commit()
 
 
 
@@ -86,6 +96,11 @@ def create_order(row, settings):
     order = Order(customer=find_customer(row, settings),
                   po_number=row[1].lstrip('0'),
                   dept_number=row[11],
+                  status='',
+                  label='',
+                  shipped_cost=0.0,
+                  shipped_retail=0.0,
+                  shipped_qty=0,
                   start_date=datetime.strptime(row[2],'%m/%d/%Y'),
                   cancel_date=datetime.strptime(row[3],'%m/%d/%Y'),
                   create_date=datetime.strptime(row[10],'%Y/%m/%d'))
@@ -98,11 +113,26 @@ def find_customer(row, settings):
 
 def stringify_order(order):
     order_string = order.__repr__()
-    for store in order.stores:
+    for store in sorted(order.stores, key=lambda store: store.store_number):
         order_string += '\n' + store.__repr__()
-        for item in store.items:
+        for item in sorted(store.items, key=lambda item: item.upc):
             order_string += '\n' + item.__repr__()
     return order_string
 
 def compare_orders(first_order, second_order):
     return stringify_order(first_order) == stringify_order(second_order)
+
+def copy_runtime_order_data(new_order, db_order):
+    """Copies runtime data (i.e. user entered label/status or shipping results) to a new order"""
+    new_order.status = db_order.status
+    new_order.label = db_order.label
+    new_order.shipped_cost = db_order.shipped_cost
+    new_order.shipped_retail = db_order.shipped_retail
+    new_order.shipped_qty = db_order.shipped_qty
+    new_order.invoices = db_order.invoices
+    return new_order
+
+if __name__ == '__main__':
+    reader = ExportReader()
+    reader.collect_orders()
+    reader.check_orders()
