@@ -29,7 +29,8 @@ class Item(Base):
 
     def __repr__(self):
         return ("Item: UPC " + self.upc + ", style " + str(self.style) + ", cost: $"
-                + str(self.cost) + ", retail: $" + str(self.retail) + ", qty: " + str(self.qty))
+                + str(int(self.cost)) + ", retail: $" + str(int(self.retail)) + ", qty: "
+                + str(self.qty))
 
 class Invoice(Base):
     __tablename__ = 'Invoices'
@@ -111,7 +112,7 @@ class Store(Base):
 
     def __repr__(self):
         return ("Store: store #" + self.store_number + ", DC #" + str(self.dc_number) + ", cost $"
-                + str(self.total_cost) + ", retail: $" + str(self.total_retail) + ", qty: "
+                + str(int(self.total_cost)) + ", retail: $" + str(int(self.total_retail)) + ", qty: "
                 + str(self.total_qty))
 
 class Order(Base):
@@ -149,7 +150,7 @@ class Order(Base):
 
     def __repr__(self):
         return ("Order: PO #" + str(self.po_number) + ", customer: " + str(self.customer)
-                + ", department #" + str(self.dept_number) + ", cost: $" + str(self.total_cost)
-                + ", retail: $" + str(self.total_retail) + ", qty: " + str(self.total_qty)
+                + ", department #" + str(self.dept_number) + ", cost: $" + str(int(self.total_cost))
+                + ", retail: $" + str(int(self.total_retail)) + ", qty: " + str(self.total_qty)
                 + " units, created on " + str(self.create_date) + ", starting on "
                 + str(self.start_date) + ", cancelling on " + str(self.cancel_date))
