@@ -88,7 +88,10 @@ def new_order(row, settings, item):
 
 def create_store(row):
     """Returns a new store using values from the row"""
-    store = Store(store_number=row[4])
+    store = Store(store_number=row[4],
+                  total_cost=0.0,
+                  total_retail=0.0,
+                  total_qty=0)
     return store
 
 def create_order(row, settings):
@@ -98,6 +101,9 @@ def create_order(row, settings):
                   dept_number=row[11],
                   status='',
                   label='',
+                  total_cost=0.0,
+                  total_retail=0.0,
+                  total_qty=0,
                   shipped_cost=0.0,
                   shipped_retail=0.0,
                   shipped_qty=0,

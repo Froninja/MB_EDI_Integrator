@@ -38,13 +38,19 @@ def test_create_item():
     assert create_item(mock_row()).__repr__() == test_item.__repr__()
 
 def test_create_store():
-    test_store = Store(store_number="TestStore")
+    test_store = Store(store_number="TestStore",
+                       total_cost=0.0,
+                       total_retail=0.0,
+                       total_qty=0)
     assert create_store(mock_row()).__repr__() == test_store.__repr__()
 
 def test_create_order():
     test_order = Order(customer='TestCustomer',
                        po_number='TestPO',
                        dept_number='TestDept',
+                       total_cost=0.0,
+                       total_retail=0.0,
+                       total_qty=0,
                        start_date=datetime(2016, 10, 31),
                        cancel_date=datetime(2016, 11, 11),
                        create_date=datetime(2016, 10, 13))
@@ -59,10 +65,16 @@ def test_new_order():
                      cost=500.0,
                      retail=1200.0,
                      qty=5)
-    test_store = Store(store_number="TestStore")
+    test_store = Store(store_number="TestStore",
+                       total_cost=0.0,
+                       total_retail=0.0,
+                       total_qty=0)
     test_order = Order(customer='TestCustomer',
                        po_number='TestPO',
                        dept_number='TestDept',
+                       total_cost=0.0,
+                       total_retail=0.0,
+                       total_qty=0,
                        start_date=datetime(2016, 10, 31),
                        cancel_date=datetime(2016, 11, 11),
                        create_date=datetime(2016, 10, 13))
