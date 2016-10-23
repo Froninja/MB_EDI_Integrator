@@ -1,3 +1,5 @@
+"""Module for ExportReader and associated functions for updating the PO database with orders
+retrieved from a flat file"""
 import csv
 from datetime import datetime
 from src.db.db import get_session
@@ -15,6 +17,7 @@ class ExportReader(object):
         self.database = get_session(self.settings['File Paths']['PO Database File'])
 
     def collect_orders(self):
+        """Reads the default export file and builds order objects"""
         with open(self.settings['File Paths']['PO Export File']) as export:
             export_reader = csv.reader(export)
             for row in export_reader:
@@ -34,6 +37,10 @@ class ExportReader(object):
             order.total()
 
     def check_orders(self):
+        """Checks against the database for previous versions of collected orders.
+        If the existing order is identical to the new one -> no action
+        If the existing order is different -> replace with new order
+        If there is no existing order -> add new order to the databse"""
         order_query = (self.database.query(Order)
                        .filter(Order.po_number.in_(list(self.orders.keys()))))
         for order in self.orders.values():
@@ -107,17 +114,19 @@ def create_order(row, settings):
                   shipped_cost=0.0,
                   shipped_retail=0.0,
                   shipped_qty=0,
-                  start_date=datetime.strptime(row[2],'%m/%d/%Y'),
-                  cancel_date=datetime.strptime(row[3],'%m/%d/%Y'),
-                  create_date=datetime.strptime(row[10],'%Y/%m/%d'))
+                  start_date=datetime.strptime(row[2], '%m/%d/%Y'),
+                  cancel_date=datetime.strptime(row[3], '%m/%d/%Y'),
+                  create_date=datetime.strptime(row[10], '%Y/%m/%d'))
     return order
 
 def find_customer(row, settings):
+    """Returns the name of the customer with the matching PO ID in the supplied row"""
     return [customer['Name']
             for customer in settings['Customer Settings'].values()
             if customer['PO ID'] == row[0]][0]
 
 def stringify_order(order):
+    """Returns a string representation of an order including all child stores and items"""
     order_string = order.__repr__()
     for store in sorted(order.stores, key=lambda store: store.store_number):
         order_string += '\n' + store.__repr__()
@@ -126,19 +135,15 @@ def stringify_order(order):
     return order_string
 
 def compare_orders(first_order, second_order):
+    """Compares the full string representation of two orders for equality"""
     return stringify_order(first_order) == stringify_order(second_order)
 
-def copy_runtime_order_data(new_order, db_order):
+def copy_runtime_order_data(fresh_order, db_order):
     """Copies runtime data (i.e. user entered label/status or shipping results) to a new order"""
-    new_order.status = db_order.status
-    new_order.label = db_order.label
-    new_order.shipped_cost = db_order.shipped_cost
-    new_order.shipped_retail = db_order.shipped_retail
-    new_order.shipped_qty = db_order.shipped_qty
-    new_order.invoices = db_order.invoices
-    return new_order
-
-if __name__ == '__main__':
-    reader = ExportReader()
-    reader.collect_orders()
-    reader.check_orders()
+    fresh_order.status = db_order.status
+    fresh_order.label = db_order.label
+    fresh_order.shipped_cost = db_order.shipped_cost
+    fresh_order.shipped_retail = db_order.shipped_retail
+    fresh_order.shipped_qty = db_order.shipped_qty
+    fresh_order.invoices = db_order.invoices
+    return fresh_order
