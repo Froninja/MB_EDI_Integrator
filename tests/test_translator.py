@@ -104,7 +104,21 @@ class TestGetInvoiceInfo(object):
                                 discount_code='05',
                                 discount=0,
                                 total_cost=4575.0,
-                                total_qty=7,)
+                                total_qty=7)
+        self.test_inv_mult = Invoice(invoice_number='65502',
+                                     customer="Bloomingdale's",
+                                     store_number='0011',
+                                     store_name='CHESTNUT HILL',
+                                     dc_number='SF',
+                                     discount_code='05',
+                                     discount=0,
+                                     total_cost=1570.0,
+                                     total_qty=2)
+        item = Item(upc='8032762282181',
+                    style='OB1403-MPB-Y-02-0.0',
+                    cost=785.0,
+                    qty=2)
+        self.test_inv_mult.items.append(item)
 
     def test_get_invoice_info(self):
         invoice_list = get_invoice_info([Invoice(invoice_number='59128',
@@ -113,6 +127,16 @@ class TestGetInvoiceInfo(object):
                                         mock_settings())
         inv = invoice_list[0]
         assert inv.__repr__() == self.test_inv.__repr__()
+        
+    def test_multiple_items(self):
+        invoice_list = get_invoice_info([Invoice(invoice_number='60485',
+                                                 customer='Neiman Marcus Direct')],
+                                        'Neiman Marcus Direct',
+                                        mock_settings())
+        inv = invoice_list[0]
+        for index, item in enumerate(self.test_inv_mult.items):
+            assert item.__repr__() == inv.items[index].__repr__()
+        assert inv.__repr__() == self.test_inv_mult.__repr__()
 
 class TestGetShippingInfo(object):
     def setup(self):

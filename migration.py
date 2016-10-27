@@ -17,7 +17,9 @@ for old_po in old_db.queryall():
                          start_date=old_po.start_ship,
                          cancel_date=old_po.cancel_ship,
                          total_retail=0,
-                         total_qty=0)
+                         total_qty=0,
+                         shipped_retail=0.0,
+                         shipped_qty=0)
     for store_old in old_po.stores.values():
         store = models.Store(store_number=store_old.store_num,
                              total_cost=store_old.total_cost,
