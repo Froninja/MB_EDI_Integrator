@@ -38,7 +38,6 @@ class POWindow(Ui_MainWindow):
         self.actionView_Distro.triggered.connect(self.open_po_table_view)
         self.CustomerBox.activated.connect(self.po_list_filter)
         self.AgeSlider.valueChanged.connect(self.po_list_filter)
-        #self.po_db = PurchaseOrderDB(self.settings['File Paths']['PO Database File'])
 
         self.db = sessionmaker(bind=engine)()
         self.po_model = POModel(self.db.query(Order).order_by(Order.po_number).all(), self.parent, self)
@@ -89,10 +88,12 @@ class POWindow(Ui_MainWindow):
         tdiff = (self.AgeSlider.value() * 30) + 30
         target_date = datetime.now() - timedelta(days=tdiff)
         self.DaysLabel.setText(str(tdiff))
-        status = ['']
+        status = []
         for num in range(len(self.status_boxes)):
             if self.status_boxes[num].isChecked() == True:
                 status.append(self.settings['Statuses'][num])
+        if len(status) == 0:
+            status = ['']
         self.po_model.po_list = (self.db.query(Order)
                                  .filter(Order.customer == customer)
                                  .filter(Order.status.in_(status))
