@@ -1,7 +1,7 @@
 from src.ui.pyuic.UiManualInvoiceDialog import Ui_ManualDialog
-from src.translate.translator import OutputTranslator
-from src.models.invoice import Invoice, Product
-from PyQt5 import QtCore
+from src.translate.translator import OutputTranslator, generate_sscc
+from src.models.models import Invoice, Item
+from PyQt5 import QtCore, QtGui
 
 class ManualInvoiceWindow(Ui_ManualDialog):
     def __init__(self, main_window, settings, order):
@@ -15,15 +15,15 @@ class ManualInvoiceWindow(Ui_ManualDialog):
         self.ShipDateCal.setDate(QtCore.QDate.currentDate())
         for customer in sorted(list(self.settings['Customer Settings'].keys())):
             self.CustomerBox.addItem(customer)
-        for store in sorted(list(self.order.stores.keys())):
-            self.StoreBox.addItem(store)
+        for store in sorted(self.order.stores):
+            self.StoreBox.addItem(store.store_number)
         self.StoreBox.setCurrentText(self.order.customer)
         self.StoreBox.activated.connect(self.populate_items)
         self.BothButton.clicked.connect(self.both_clicked)
 
     def populate_items(self):
-        store = self.order.stores[self.StoreBox.currentText()]
-        self.ItemTable.model().item_list = sorted(store.items.values(), key=lambda i: i.style_num)
+        store = next((st for st in self.order.stores if st.store_number == self.StoreBox.currentText()))
+        self.ItemTable.model().item_list = sorted(store.items, key=lambda i: i.style)
         self.ItemTable.model().layoutChanged.emit()
 
     def both_clicked(self):
@@ -36,20 +36,20 @@ class ManualInvoiceWindow(Ui_ManualDialog):
         output.write_output()
 
     def generate_invoice(self):
-        invoice = Invoice(self.InvoiceEdit.text())
-        invoice.purchase_order_number = self.order.po_number
-        invoice.customer = self.CustomerBox.currentText()
-        invoice.get_dept_num(False, self.settings['Customer Settings']
-                             [invoice.customer]['Asset Department'],
-                             self.settings['Customer Settings']
-                             [invoice.customer]['Memo Department'])
-        invoice.tracking_number = self.TrackingBox.text()
+        invoice = Invoice(invoice_number=self.InvoiceEdit.text(),
+                          customer=self.CustomerBox.currentText(),
+                          po_number=self.order.po_number,
+                          tracking_number=self.TrackingBox.text(),
+                          ship_date=self.ShipDateCal.date(),
+                          store_number=self.StoreBox.currentText())
+        invoice.dept_number(False, self.settings['Customer Settings']
+                            [invoice.customer]['Asset Department'],
+                            self.settings['Customer Settings']
+                            [invoice.customer]['Memo Department'])
         invoice.discount(self.DiscountSpin.value())
-        invoice.ship_date = self.ShipDateCal.date()
-        invoice.store_number = self.StoreBox.currentText()
-        invoice.items = [Product.from_item(item) for item in self.ItemTable.model().item_list]
-        invoice.totals()
-        invoice.get_sscc()
+        invoice.items = self.ItemTable.model().item_list
+        invoice.get_totals()
+        invoice.sscc_number = generate_sscc(invoice.invoice_number)
         return invoice
 
 
@@ -57,7 +57,7 @@ class ItemModel(QtCore.QAbstractTableModel):
     def __init__(self, parent, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         self.item_list = []
-        self.attr = ['upc', 'style_num', 'cost', 'total_qty']
+        self.attr = ['upc', 'style', 'cost', 'qty']
         self.headers = ['UPC', 'Style Number', 'Cost', 'Qty']
 
     def flags(self, index):
