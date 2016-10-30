@@ -1,7 +1,6 @@
 import csv
 import sys
 from datetime import datetime
-from PyQt5.QtWidgets import QApplication
 from src.models.models import Invoice, Item
 from src.translate.translator import (generate_sscc, get_store_info, check_upc_exceptions,
                                       assign_items, get_invoice_info, get_shipping_info)
@@ -97,7 +96,6 @@ def test_assign_items_with_well_formed_data():
 
 class TestGetInvoiceInfo(object):
     def setup(self):
-        self.app = QApplication(sys.argv)
         mock_destination_log()
         mock_upc_log()
         self.test_inv = Invoice(invoice_number='59128',
