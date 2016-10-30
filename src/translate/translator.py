@@ -40,6 +40,7 @@ of invoices
                     print("%s Operation canceled by user" % datetime.now())
                     return False
                 return True
+        print("%s Operation canceled by user" % datetime.now())
         return False
 
     def get_customer_settings(self):
@@ -158,7 +159,11 @@ def get_invoice_info(invoice_list: list, customer: str, settings: dict):
         testsql = (sql % params)
         query_rows = cursor.fetchall()
         invoices = assign_items(query_rows, invoices, settings)
+        if not invoices:
+            return False
         invoices = assign_stores(query_rows, invoices, settings)
+        if not invoices:
+            return False
         [inv.get_totals() for inv in invoices.values()]
     return sort_invoices([inv for inv in invoices.values()])
 
@@ -209,7 +214,7 @@ def get_store_info(invoice: Invoice, destination: str, settings: dict):
 
 def store_not_found(invoice: Invoice, destination: str, settings: dict):
     """Opens a warning dialog and assigns user entered store info to invoice and persistant file.
-    Returns False if user cancels operation"""
+    Returns the invoice with a False store number if user cancels operation"""
     dialog = StoreWarningDialog(destination, invoice.invoice_number)
     dialog.exec_()
     if dialog.confirmed == True:
@@ -219,7 +224,9 @@ def store_not_found(invoice: Invoice, destination: str, settings: dict):
         inv.store_name = dialog.store_name
         write_new_destination(dialog, destination, settings, inv.customer)
         return inv
-    return False
+    inv = invoice
+    inv.store_number = False
+    return inv
 
 def write_new_destination(dialog: StoreWarningDialog, destination: str, settings: dict,
                           customer: str):
