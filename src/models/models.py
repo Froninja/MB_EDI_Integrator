@@ -29,7 +29,7 @@ class Item(Base):
 
     def __repr__(self):
         return ("Item: UPC " + self.upc + ", style " + str(self.style) + ", cost: $"
-                + str(int(self.cost)) + ", retail: $" + str(int(self.retail)) + ", qty: "
+                + str(int(self.cost)) + ", retail: $" + str(self.retail) + ", qty: "
                 + str(self.qty))
 
 class Invoice(Base):

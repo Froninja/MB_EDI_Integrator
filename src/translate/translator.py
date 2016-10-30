@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, QtCore
 import pymssql
 import csv
 from src.models.models import Invoice, Item
-from src.db.db import get_session
+from src.db.db import get_session, get_sql_connection
 from src.ui.warnings import (OverWriteDialog, UPCWarningDialog,
                              TrackingWarningDialog, StoreWarningDialog, DescriptionWarningDialog,)
 from src.translate.validater import DbValidater
@@ -177,7 +177,11 @@ def assign_items(rows: list, invoices: dict, settings: dict):
                                      settings, invoice.customer)
             if not item.upc:
                 return False
-        invoice.items.append(item)
+        if item.upc in [it.upc for it in invoice.items]:
+            orig_item = next((it for it in invoice.items if it.upc == item.upc))
+            orig_item.qty += item.qty
+        else:
+            invoice.items.append(item)
     return invoices
 
 def assign_stores(rows: list, invoices: dict, settings: dict):
@@ -321,21 +325,5 @@ def add_output_row(session, invoice):
                           city_state_zip=(invoice.city + ', ' + invoice.state
                                           + ' ' + invoice.zip_code))"""
     session.add(invoice)
-
-def get_sql_connection(conn_string):
-    """
-    Returns a pymssql connection object based on the connection string in settings.
-    """
-    conn_settings = get_conn_settings(conn_string)
-    return pymssql.connect(conn_settings['SERVER'], conn_settings['UID'],
-                           conn_settings['PWD'], conn_settings['DATABASE'])
-
-def get_conn_settings(conn_string):
-    """
-    Returns a dictionary of connection settings from a given key=value, ;-delimited connection
-    string
-    """
-    conn_list = [item.split('=') for item in conn_string.split(';')]
-    return {item[0]: item[1] for item in conn_list}
 
 

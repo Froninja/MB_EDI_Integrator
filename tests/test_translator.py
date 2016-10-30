@@ -1,5 +1,7 @@
 import csv
+import sys
 from datetime import datetime
+from PyQt5.QtWidgets import QApplication
 from src.models.models import Invoice, Item
 from src.translate.translator import (generate_sscc, get_store_info, check_upc_exceptions,
                                       assign_items, get_invoice_info, get_shipping_info)
@@ -9,6 +11,7 @@ def mock_destination_log():
         writer = csv.writer(log)
         writer.writerow(['TestCust', 'TestDest', '0001', '0123', 'TestName'])
         writer.writerow(['Saks Fifth Avenue', 'Direct - #689', '0689', '0385', ''])
+        writer.writerow(["Bloomingdale's", 'BLM - CHESTNUT HILL - STORE# 11', '0011', 'SF', 'CHESTNUT HILL'])
 
 def mock_upc_log():
     with open('tu_log.txt', 'w') as log:
@@ -94,6 +97,7 @@ def test_assign_items_with_well_formed_data():
 
 class TestGetInvoiceInfo(object):
     def setup(self):
+        self.app = QApplication(sys.argv)
         mock_destination_log()
         mock_upc_log()
         self.test_inv = Invoice(invoice_number='59128',
@@ -129,9 +133,9 @@ class TestGetInvoiceInfo(object):
         assert inv.__repr__() == self.test_inv.__repr__()
         
     def test_multiple_items(self):
-        invoice_list = get_invoice_info([Invoice(invoice_number='60485',
-                                                 customer='Neiman Marcus Direct')],
-                                        'Neiman Marcus Direct',
+        invoice_list = get_invoice_info([Invoice(invoice_number='65502',
+                                                 customer="Bloomingdale's")],
+                                        "Bloomingdale's",
                                         mock_settings())
         inv = invoice_list[0]
         for index, item in enumerate(self.test_inv_mult.items):
