@@ -72,7 +72,7 @@ class Invoice(Base):
         else:
             self.discount_code = "08"
 
-    def dept_number(self, memo_val, asset_dept, memo_dept):
+    def get_dept_number(self, memo_val, asset_dept, memo_dept):
         """Sets the department number based on the settings provided"""
         if memo_val is True or memo_val == 2:
             self.dept_number = memo_dept.zfill(4)
