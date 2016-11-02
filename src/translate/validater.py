@@ -20,7 +20,7 @@ class DbValidater(object):
         """Root for validating invoices against POs. Returns false if user cancels."""
         po_list = get_po_list(self.invoice_list)
         for order in po_list:
-            if self.database.query(Order).filter(Order.po_number == order) is None:
+            if self.database.query(Order).filter(Order.po_number == order).first() is None:
                 self.warning_dialog = create_po_warning_dialog(order, self.invoice_list)
                 self.warning_dialog.exec_()
                 if self.warning_dialog.confirmed:
@@ -95,9 +95,9 @@ class DbValidater(object):
         Updates the shipped cost and qty for the given store
         """
         if invoice.invoice_number not in [inv.invoice_number for inv in store.invoices]:
-            #if store.shipped_cost is None:
-                #store.shipped_cost = 0.0
-                #store.shipped_qty = 0
+            if store.shipped_cost is None:
+                store.shipped_cost = 0.0
+                store.shipped_qty = 0
             store.shipped_cost = float(store.shipped_cost) + invoice.total_cost
             #store.shipped_retail += invoice.total_retail
             store.shipped_qty = int(store.shipped_qty) + invoice.total_qty
