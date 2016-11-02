@@ -54,8 +54,8 @@ of invoices
                                   customer=self.customer,
                                   po_number=row[1])
                 invoice.discount(row[2])
-                invoice.dept_number(row[3], self.customer_settings['Asset Department'],
-                                    self.customer_settings['Memo Department'])
+                invoice.get_dept_number(row[3], self.customer_settings['Asset Department'],
+                                        self.customer_settings['Memo Department'])
                 self.invoice_list.append(invoice)
                 print("%s Created Invoice# %s, with PO# %s, Dept# %s, and discount %s"
                       % (datetime.now(), invoice.invoice_number, invoice.po_number,
@@ -142,10 +142,10 @@ def generate_sscc(inv_num):
 def get_shipping_info(invoice_list: list, settings: dict):
     """Returns a new sorted invoice list populated with data from the shipping log"""
     for invoice in invoice_list:
-        invoice = assign_shipping_info(invoice, settings['File Paths']['Shipping Log'])
-        invoice.sscc_number = generate_sscc(invoice.invoice_number)
+        invoice = assign_shipping_info(invoice, settings['File Paths']['Shipping Log'])        
         if not invoice:
             return False
+        invoice.sscc_number = generate_sscc(invoice.invoice_number)
     return invoice_list
 
 def get_invoice_info(invoice_list: list, customer: str, settings: dict):
