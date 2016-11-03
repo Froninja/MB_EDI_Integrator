@@ -43,6 +43,7 @@ class DbValidater(object):
             for item in invoice.items:
                 if not self.check_item(item, store, invoice.invoice_number, order.po_number):
                     return False
+            self.update_po_ship_status(invoice, order)
             self.update_store_ship_status(invoice, order, store)
 
         elif order is not None:
@@ -83,11 +84,16 @@ class DbValidater(object):
         Updates the shipped cost and invoice list for the provided order
         """
         if invoice.invoice_number not in [inv.invoice_number for inv in order.invoices]:
+            if order.shipped_cost is None:
+                order.shipped_cost = 0.0
+                order.shipped_retail = 0.0
+                order.shipped_qty = 0
+            elif order.shipped_retail is None:
+                order.shipped_retail = 0.0
             order.invoices.append(invoice)
             order.shipped_cost += invoice.total_cost
             #order.shipped_retail += invoice.total_retail
             order.shipped_qty += invoice.total_qty
-            #self.database.update(order)
 
     def update_store_ship_status(self, invoice, order, store):
         """
@@ -97,12 +103,14 @@ class DbValidater(object):
         if invoice.invoice_number not in [inv.invoice_number for inv in store.invoices]:
             if store.shipped_cost is None:
                 store.shipped_cost = 0.0
+                store.shipped_retail = 0.0
                 store.shipped_qty = 0
-            store.shipped_cost = float(store.shipped_cost) + invoice.total_cost
+            elif store.shipped_retail is None:
+                store.shipped_retail = 0.0
+            store.shipped_cost += invoice.total_cost
             #store.shipped_retail += invoice.total_retail
-            store.shipped_qty = int(store.shipped_qty) + invoice.total_qty
+            store.shipped_qty += invoice.total_qty
             store.invoices.append(invoice)
-            #self.database.update(order)
 
 
 def get_po_list(invoice_list):
