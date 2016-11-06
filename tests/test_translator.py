@@ -7,7 +7,7 @@ from src.translate.translator import (generate_sscc, get_store_info, check_upc_e
 
 def mock_destination_log():
     with open('td_log.txt', 'w') as log:
-        writer = csv.writer(log)
+        writer = csv.writer(log, delimiter=';')
         writer.writerow(['TestCust', 'TestDest', '0001', '0123', 'TestName'])
         writer.writerow(['Saks Fifth Avenue', 'Direct - #689', '0689', '0385', ''])
         writer.writerow(["Bloomingdale's", 'BLM - CHESTNUT HILL - STORE# 11', '0011', 'SF', 'CHESTNUT HILL'])

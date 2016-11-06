@@ -202,7 +202,7 @@ def get_store_info(invoice: Invoice, destination: str, settings: dict):
     """Checks the destination file for store info and assigns to the invoice. If the destination
     is not found, requests user input. Returns False if the user cancels operation"""
     with open(settings['File Paths']['Destination Log'], 'r') as dest_log:
-        dest_reader = csv.reader(dest_log)
+        dest_reader = csv.reader(dest_log, delimiter=';')
         for row in dest_reader:
             if len(row) > 0 and row[0] == invoice.customer and row[1] == destination:
                 invoice.store_number = row[2].zfill(4)
@@ -232,7 +232,7 @@ def write_new_destination(dialog: StoreWarningDialog, destination: str, settings
                           customer: str):
     """Writes the new user-entered information to the log"""
     with open(settings['File Paths']['Destination Log'], 'a') as dest_log:
-        dest_writer = csv.writer(dest_log)
+        dest_writer = csv.writer(dest_log, delimiter=';')
         dest_writer.writerow([customer, destination,
                               dialog.store_num, dialog.dc_num, dialog.store_name])
 
