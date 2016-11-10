@@ -13,7 +13,7 @@ class ExportReader(object):
     orders = dict()
 
     def __init__(self):
-        self.settings = read_config('Config.yaml')
+        self.settings = read_config(r'P:\EDI\MB_EDI_Integrator\Config.yaml')
         self.database = get_session(self.settings['File Paths']['PO Database File'])
 
     def collect_orders(self):

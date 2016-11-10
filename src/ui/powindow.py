@@ -39,7 +39,7 @@ class POWindow(Ui_MainWindow):
         self.CustomerBox.activated.connect(self.po_list_filter)
         self.AgeSlider.valueChanged.connect(self.po_list_filter)
 
-        self.db = sessionmaker(bind=engine)()
+        self.db = sessionmaker(bind=engine())()
         self.po_model = POModel(self.db.query(Order).order_by(Order.po_number).all(), self.parent, self)
         self.po_model.parent_form = self
         self.po_model.layoutChanged.connect(self.insert_combo_boxes)

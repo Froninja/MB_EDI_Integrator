@@ -3,9 +3,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from src.helpers.config import read_config
 
-settings = read_config('Config.yaml')
-
-engine = create_engine(r'sqlite:///' + settings['File Paths']['PO Database File'])
+def engine():
+    settings = read_config('Config.yaml')
+    engine = create_engine(r'sqlite:///' + settings['File Paths']['PO Database File'])
+    return engine
 
 Base = declarative_base()
 

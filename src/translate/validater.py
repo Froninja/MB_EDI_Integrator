@@ -1,5 +1,5 @@
 from src.db.podb import PurchaseOrderDB
-from src.models.models import Order, Store, Item, engine
+from src.models.models import Order, Store, Item
 from src.ui.warnings import WarningDialog, POWarningDialog, UPCPOWarningDialog
 from sqlalchemy.orm import sessionmaker
 from PyQt5 import QtWidgets

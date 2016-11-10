@@ -15,7 +15,7 @@ class ManualInvoiceWindow(Ui_ManualDialog):
         self.ShipDateCal.setDate(QtCore.QDate.currentDate())
         for customer in sorted(list(self.settings['Customer Settings'].keys())):
             self.CustomerBox.addItem(customer)
-        for store in sorted(self.order.stores):
+        for store in sorted(self.order.stores, key=lambda store: store.store_number):
             self.StoreBox.addItem(store.store_number)
         self.StoreBox.setCurrentText(self.order.customer)
         self.StoreBox.activated.connect(self.populate_items)
