@@ -19,7 +19,7 @@ class ManualInvoiceWindow(Ui_ManualDialog):
             self.StoreBox.addItem(store.store_number)
         self.StoreBox.setCurrentText(self.order.customer)
         self.StoreBox.activated.connect(self.populate_items)
-        self.BothButton.clicked.connect(self.both_clicked)
+        self.ExecuteButton.clicked.connect(self.both_clicked)
 
     def populate_items(self):
         store = next((st for st in self.order.stores if st.store_number == self.StoreBox.currentText()))
@@ -39,6 +39,7 @@ class ManualInvoiceWindow(Ui_ManualDialog):
         invoice = Invoice(invoice_number=self.InvoiceEdit.text(),
                           customer=self.CustomerBox.currentText(),
                           po_number=self.order.po_number,
+                          dc_number=self.DcBox.text(),
                           tracking_number=self.TrackingBox.text(),
                           ship_date=self.ShipDateCal.date(),
                           store_number=self.StoreBox.currentText())
