@@ -60,3 +60,6 @@ MB_EDI_Integrator.pyproj
 /.cache/v/cache
 /bin/Config.yaml
 /PoDatabase.db
+/tests/.cache/v/cache
+/td_log.txt
+/tu_log.txt
