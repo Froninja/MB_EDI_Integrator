@@ -1,7 +1,7 @@
 """Module for ExportReader and associated functions for updating the PO database with orders
 retrieved from a flat file"""
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 from src.db.db import get_session
 from src.helpers.config import read_config
 from src.models.models import Order, Store, Item
@@ -13,7 +13,7 @@ class ExportReader(object):
     orders = dict()
 
     def __init__(self):
-        self.settings = read_config(r'P:\EDI\MB_EDI_Integrator\Config.yaml')
+        self.settings = read_config(r'P:\EDI\MB_EDI_Integrator\dist\launcher\Config.yaml')
         self.database = get_session(self.settings['File Paths']['PO Database File'])
 
     def collect_orders(self):
@@ -65,8 +65,11 @@ def create_item(row):
     item = Item(style=row[6],
                 upc=row[5],
                 cost=float(row[7]),
-                retail=float(row[8]),
                 qty=int(row[9]))
+    try:
+        item.retail = float(row[8])
+    except ValueError:
+        item.retail = 0
     return item
 
 def check_for_order(row, orders):
@@ -114,9 +117,15 @@ def create_order(row, settings):
                   shipped_cost=0.0,
                   shipped_retail=0.0,
                   shipped_qty=0,
-                  start_date=datetime.strptime(row[2], '%m/%d/%Y'),
-                  cancel_date=datetime.strptime(row[3], '%m/%d/%Y'),
                   create_date=datetime.strptime(row[10], '%Y/%m/%d'))
+    try:
+        order.start_date=datetime.strptime(row[2], '%m/%d/%Y')
+    except ValueError:
+        order.start_date=datetime.now()
+    try:
+        order.cancel_date=datetime.strptime(row[3], '%m/%d/%Y')
+    except ValueError:
+        order.cancel_date=datetime.now() + timedelta(30)
     return order
 
 def find_customer(row, settings):
