@@ -1,5 +1,6 @@
 from src.ui.pyuic.UiSettingsDialog import Ui_SettingsDialog
 from src.ui.pyuic.UiCustomerAddDialog import Ui_CustomerAddDialog
+from src.ui.addcustomer import AddCustomerDialog
 from PyQt5 import QtCore, QtWidgets, QtGui
 import yaml
 
@@ -80,11 +81,10 @@ class SettingsDialog(Ui_SettingsDialog):
             self.StatusList.setItem(num, 0, QtWidgets.QTableWidgetItem(self.settings['Statuses'][num]))
 
     def add_new_clicked(self):
-        q = QtWidgets.QDialog()
-        add_window = Ui_CustomerAddDialog()
-        add_window.setupUi(q, list(self.settings["Customer Settings"].values())[0])
-        q.exec_()
-        if add_window.confirmed == True and add_window.customer != '':
+        dialog = QtWidgets.QDialog()
+        add_window = AddCustomerDialog(dialog)
+        dialog.exec_()
+        if add_window.confirmed == True and add_window.customer is not None:
             self.CustomerTable.model().customers.append(add_window.customer)
             self.CustomerTable.model().layoutChanged.emit()
 
