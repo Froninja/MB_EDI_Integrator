@@ -202,9 +202,12 @@ class POPrinter(QtCore.QObject):
                                                                     self.po.cancel_date.strftime("%m/%d/%Y")))
         cursor.movePosition(QtGui.QTextCursor.NextBlock)
 
-        #cursor.insertBlock(info_block)
-        #cursor.insertText("Department: %s\t\tDiscount Required: %s\n" % (self.po.dept_number, self.po.discount))
-        #cursor.movePosition(QtGui.QTextCursor.NextBlock)
+        try:
+            cursor.insertBlock(info_block)
+            cursor.insertText("Department: %s\n" % self.po.dept_number)
+            cursor.movePosition(QtGui.QTextCursor.NextBlock)
+        except:
+            pass
 
         cursor.insertBlock(header_block)
         cursor.insertText("Stores")
