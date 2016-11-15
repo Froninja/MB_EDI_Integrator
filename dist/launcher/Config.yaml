@@ -1,0 +1,128 @@
+Customer Settings:
+  Bloomingdale's:
+    ASN File: BLM_856.txt
+    ASN ID: '6113310072'
+    Asset Department: '707'
+    Creation Date Required: 'False'
+    Description Required: 'False'
+    EDI Version: 4010VICS
+    Invoice File: BLM_810.txt
+    Invoice ID: '6113310072'
+    Memo Department: '708'
+    Name: Bloomingdale's
+    PO ID: '6113310072'
+  Elliot:
+    ASN File: ''
+    ASN ID: ''
+    Asset Department: ''
+    Creation Date Required: 'True'
+    Description Required: 'True'
+    EDI Version: ''
+    Invoice File: ''
+    Invoice ID: ''
+    Memo Department: ''
+    Name: Elliot
+    PO ID: ''
+  Jacob:
+    ASN File: ''
+    ASN ID: ''
+    Asset Department: ''
+    Creation Date Required: true
+    Description Required: true
+    EDI Version: ''
+    Invoice File: ''
+    Invoice ID: ''
+    Memo Department: ''
+    Name: Jacob
+    PO ID: ''
+  Nordstrom:
+    ASN File: Nord_856.txt
+    ASN ID: '2062336664'
+    Asset Department: '89'
+    Creation Date Required: 'False'
+    Description Required: 'False'
+    EDI Version: 4010VICS
+    Invoice File: Nord_810.txt
+    Invoice ID: 007942915
+    Memo Department: ''
+    Name: Nordstrom
+    PO ID: 007942915
+  Nordstrom Canada:
+    ASN File: Nord_CA_856.txt
+    ASN ID: NORDJWNASN
+    Asset Department: '89'
+    Creation Date Required: 'False'
+    Description Required: 'False'
+    EDI Version: 4010VICS
+    Invoice File: Nord_CA_810.txt
+    Invoice ID: NORDJWN
+    Memo Department: ''
+    Name: Nordstrom Canada
+    PO ID: NORDJWN
+  Saks Canada:
+    ASN File: Saks_CA_856.txt
+    ASN ID: SAKSCANINB
+    Asset Department: '162'
+    Creation Date Required: 'True'
+    Description Required: 'False'
+    EDI Version: 4050VICS
+    Invoice File: Saks_CA_810.txt
+    Invoice ID: SAKSCAN810
+    Memo Department: '400'
+    Name: Saks Canada
+    PO ID: SAKSCANOUT
+  Saks Fifth Avenue:
+    ASN File: Saks_856.txt
+    ASN ID: '6092785376'
+    Asset Department: '162'
+    Creation Date Required: 'True'
+    Description Required: 'False'
+    EDI Version: 4050VICS
+    Invoice File: Saks_810.txt
+    Invoice ID: '4142785783'
+    Memo Department: '400'
+    Name: Saks Fifth Avenue
+    PO ID: 006989867
+  Saks Off Fifth:
+    ASN File: Saks_856.txt
+    ASN ID: '6092785376'
+    Asset Department: '932'
+    Creation Date Required: 'True'
+    Description Required: 'False'
+    EDI Version: 4050VICS
+    Invoice File: Saks_810.txt
+    Invoice ID: '4142785783'
+    Memo Department: '990'
+    Name: Saks Off Fifth
+    PO ID: 006989867
+File Paths:
+  Description Log: P:\EDI\MB_EDI_Integrator\bin\Desclog.csv
+  Destination Log: P:\EDI\MB_EDI_Integrator\bin\DestLog.csv
+  Label Record File: P:\EDI\Output_Record.txt
+  MAPDATA Path: P:\EDI\MAPDATA
+  PO Database File: PO_Database.db
+  PO Export File: C:\Users\Jacob\Documents\PO_Export.csv
+  Shipping Log: L:\Shipping\BUSA SHIPMENTS\UPS_EACH_SHIPMENT_EXPORT.csv
+  UPC Exception Log: P:\EDI\MB_EDI_Integrator\bin\UPC_Exception.csv
+SQL Settings:
+  Connection String: DRIVER={SQL Server};SERVER=10.0.1.93;DATABASE=LFL;UID=amm;PWD=amm
+  Destination Query: SELECT DISTINCT NrDocF, DestinazioneCliente, CodDocF, DataFatt
+    FROM VIEW_AnalisiVendite_usa WHERE (CodDocF IN ('INV','MEM')) AND (DataFatt>%s)
+    AND (NrDocF IN ({}))
+  Invoice Query: SELECT DocNum, Date, Style, Stone, Color, Finish, Length, Pieces,
+    Cost, Destination, RingUpc, Upc FROM EDI_Invoice_Info WHERE Date >= %s AND DocNum
+    IN ({})
+  Memo Destination Query: SELECT DISTINCT NrDocF, DestinazioneCliente, CodDocF, AnnoF
+    FROM VIEW_AnalisiMemo_usa WHERE (CodDocF IN ('INV','MEM')) AND (DataFatt>%s) AND
+    (NrDocF IN ({}))
+  Ring UPC Query: SELECT BarCode, CodMod, Cod, Colore, Sup, Inch FROM View_BarcodeITA_InchCM
+    WHERE (CodMod IN ({}))
+  UPC Query: SELECT BarCode, CodMod, Cod, Colore, Sup, Lgh FROM BarCodeITA WHERE CodMod
+    IN ({})
+Statuses:
+- Bulk Ordered
+- Single Ordered
+- IO/PO
+- Partial Shipped
+- Shipped Complete
+- ''
