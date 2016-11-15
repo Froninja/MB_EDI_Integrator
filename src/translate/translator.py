@@ -107,6 +107,7 @@ def assign_shipping_info(invoice: Invoice, ship_log: str):
         dialog.exec_()
         if dialog.confirmed is True:
             invoice.tracking_number = dialog.tracking
+            invoice.ship_date = datetime.now()
         else:
             return False
     return invoice
