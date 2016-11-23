@@ -238,7 +238,7 @@ class TestInvalidDestLog(object):
     def teardown(self):
         os.remove("Config.yml")
         delete_ship_log()
-        delete_upc_log
+        delete_upc_log()
 
 class TestDestLogBadFormat(object):
     def setup(self):
