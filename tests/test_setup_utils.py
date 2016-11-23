@@ -201,7 +201,7 @@ class TestNoDestLog(object):
         write_valid_ship_log()
         write_valid_upc_log()
 
-    def test_no_upc_log(self):
+    def test_no_dest_log(self):
         with pytest.raises(SettingsException) as excinfo:
             check_config("Config.yml")
         assert str(excinfo.value.message) == (
@@ -228,7 +228,7 @@ class TestInvalidDestLog(object):
         write_valid_ship_log()
         write_valid_upc_log()
 
-    def test_invalid_upc_log_path(self):
+    def test_invalid_dest_log_path(self):
         with pytest.raises(SettingsException) as excinfo:
             check_config("Config.yml")
         assert str(excinfo.value.message) == (
@@ -240,7 +240,7 @@ class TestInvalidDestLog(object):
         delete_ship_log()
         delete_upc_log
 
-class TestUpcLogBadFormat(object):
+class TestDestLogBadFormat(object):
     def setup(self):
         write_valid_ship_log()
         write_valid_upc_log()
@@ -256,7 +256,7 @@ class TestUpcLogBadFormat(object):
         }
         write_config(settings, "Config.yml")
 
-    def test_invalid_upc_log_format(self):
+    def test_invalid_dest_log_format(self):
         with pytest.raises(SettingsException) as excinfo:
             check_config("Config.yml")
         assert str(excinfo.value.message) == (
