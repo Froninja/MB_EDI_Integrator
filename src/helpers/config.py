@@ -2,6 +2,7 @@
 from os import path
 import csv
 import yaml
+from src.db.db import get_engine
 
 def read_config(config_file):
     """Reads a config file in YAML format and returns a settings dictionary"""
@@ -45,11 +46,6 @@ def validate_config(settings):
 
 def validate_file_paths(file_settings):
     """Validates the file paths portion of the settings dictionary"""
-    if not "PO Database File" in file_settings:
-        raise SettingsException(file_settings, "PO Database File", "Could not locate the order"
-                                + " database file. Please select a valid Sqlite file.")
-    #validate_po_db(file_settings)
-
     if not "MAPDATA Path" in file_settings:
         raise SettingsException(file_settings, "MAPDATA Path", "Could not locate the MAPDATA path."
                                 + " Please select a valid directory.")
@@ -70,10 +66,29 @@ def validate_file_paths(file_settings):
                                 + " destination and store file. Please select a valid txt file.")
     validate_destination_log(file_settings)
 
+    if not "PO Database File" in file_settings:
+        raise SettingsException(file_settings, "PO Database File", "Could not locate the order"
+                                + " database file. Please select a valid Sqlite file.")
+    validate_po_db(file_settings)
+
 def validate_po_db(file_settings):
     """Confirms that the path is a valid Sqlite database and has the required tables (or
     creates them)"""
-    raise NotImplementedError()
+    if not path.isfile(file_settings["PO Database File"]):
+        raise SettingsException(file_settings, "PO Database File",
+                                str(file_settings["PO Database File"]) + " is not a valid file."
+                                + " Please select a valid Sqlite file")
+    eng = get_engine(file_settings["PO Database File"])
+
+    #Raise an error if specified databse lacks any needed table
+    if not (eng.has_table("Orders") and
+            eng.has_table("Stores") and
+            eng.has_table("Items") and
+            eng.has_table("Invoices")):
+        raise SettingsException(file_settings, "PO Database File",
+                                str(file_settings["PO Database File"]) + " is missing one or more"
+                                + " required tables. Create them now? (Warning: will overwrite"
+                                + " existing data)")
 
 def validate_mapdata_path(file_settings):
     """Confirms that the path is a valid directory"""

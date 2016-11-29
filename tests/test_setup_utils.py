@@ -7,7 +7,7 @@ class TestEmptyConfig(object):
         with pytest.raises(SettingsException) as excinfo:
             check_config("Config.yml")
         assert str(excinfo.value.message) == (
-            "Could not locate the order database file. Please select a valid Sqlite file."
+            "Could not locate the MAPDATA path. Please select a valid directory."
         )
 
     def teardown(self):
@@ -300,6 +300,114 @@ class TestValidConfig(object):
         delete_upc_log()
         delete_dest_log()
 
+class TestPoDbNoPath(object):
+    def setup(self):
+        settings = {
+            "File Paths": {
+                "MAPDATA Path": "tests/",
+                "Shipping Log": "test_ship_log.csv",
+                "UPC Exception Log": "test_upc_log.csv",
+                "Destination Log": "test_dest_log.txt"
+            },
+            "SQL Settings": {
+
+            },
+            "Customer Settings": {
+
+            }
+        }
+        write_config(settings, "Config.yml")
+        write_valid_upc_log()
+        write_valid_dest_log()
+        write_valid_ship_log()
+
+    def test_po_db_not_specified(self):
+        with pytest.raises(SettingsException) as excinfo:
+            check_config("Config.yml")
+        assert str(excinfo.value.message) == (
+            "Could not locate the order database file. Please select a valid Sqlite file."
+        )
+
+    def teardown(self):
+        os.remove("Config.yml")
+        delete_upc_log()
+        delete_ship_log()
+        delete_dest_log()
+
+class TestPoDbInvalidPath(object):
+    def setup(self):
+        settings = {
+            "File Paths": {
+                "MAPDATA Path": "tests/",
+                "Shipping Log": "test_ship_log.csv",
+                "UPC Exception Log": "test_upc_log.csv",
+                "Destination Log": "test_dest_log.txt",
+                "PO Database File": "test.sqlite"
+            },
+            "SQL Settings": {
+
+            },
+            "Customer Settings": {
+
+            }
+        }
+        write_config(settings, "Config.yml")
+        write_valid_upc_log()
+        write_valid_dest_log()
+        write_valid_ship_log()
+
+    def test_po_db_invalid_path(self):
+        with pytest.raises(SettingsException) as excinfo:
+            check_config("Config.yml")
+        assert str(excinfo.value.message) == (
+            "test.sqlite is not a valid file. Please select a valid Sqlite file"
+        )
+
+    def teardown(self):
+        os.remove("Config.yml")
+        delete_upc_log()
+        delete_ship_log()
+        delete_dest_log()
+
+class TestPoDbNoTables(object):
+    def setup(self):
+        settings = {
+            "File Paths": {
+                "MAPDATA Path": "tests/",
+                "Shipping Log": "test_ship_log.csv",
+                "UPC Exception Log": "test_upc_log.csv",
+                "Destination Log": "test_dest_log.txt",
+                "PO Database File": "test.sqlite"
+            },
+            "SQL Settings": {
+
+            },
+            "Customer Settings": {
+
+            }
+        }
+        write_config(settings, "Config.yml")
+        write_valid_upc_log()
+        write_valid_dest_log()
+        write_valid_ship_log()
+        write_invalid_po_db()
+
+    def test_po_db_no_tables(self):
+        with pytest.raises(SettingsException) as excinfo:
+            check_config("Config.yml")
+        assert str(excinfo.value.message) == (
+            "test.sqlite is missing one or more"
+            + " required tables. Create them now? (Warning: will overwrite"
+            + " existing data)"
+        )
+
+    def teardown(self):
+        os.remove("Config.yml")
+        delete_upc_log()
+        delete_ship_log()
+        delete_dest_log()
+        #delete_po_db()
+
 def write_valid_ship_log():
     with open("test_ship_log.csv", 'w') as ship_log:
         ship_log.write("a, b, c, d, e, f, g, h, i, j")
@@ -324,6 +432,10 @@ def write_invalid_dest_log():
     with open("test_dest_log.txt", 'w') as dest_log:
         dest_log.write("cust;dest")
 
+def write_invalid_po_db():
+    with open("test.sqlite", 'w') as po_db:
+        po_db.write("Oinkers")
+
 def delete_ship_log():
     os.remove("test_ship_log.csv")
 
@@ -332,3 +444,6 @@ def delete_upc_log():
 
 def delete_dest_log():
     os.remove("test_dest_log.txt")
+
+def delete_po_db():
+    os.remove("test.sqlite")
