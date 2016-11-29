@@ -5,8 +5,8 @@ from src.helpers.config import read_config
 
 def engine():
     settings = read_config('Config.yaml')
-    engine = create_engine(r'sqlite:///' + settings['File Paths']['PO Database File'])
-    return engine
+    eng = create_engine(r'sqlite:///' + settings['File Paths']['PO Database File'])
+    return eng
 
 Base = declarative_base()
 

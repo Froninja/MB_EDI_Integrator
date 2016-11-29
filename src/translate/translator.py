@@ -1,12 +1,11 @@
 from os import path
-from datetime import datetime, date, timedelta
-from PyQt5 import QtWidgets, QtCore
-import pymssql
+from datetime import datetime, timedelta
 import csv
+from PyQt5 import QtWidgets, QtCore
 from src.models.models import Invoice, Item
 from src.db.db import get_session, get_sql_connection
 from src.ui.warnings import (OverWriteDialog, UPCWarningDialog,
-                             TrackingWarningDialog, StoreWarningDialog, DescriptionWarningDialog,)
+                             TrackingWarningDialog, StoreWarningDialog)
 from src.translate.validater import DbValidater
 
 
@@ -142,7 +141,7 @@ def generate_sscc(inv_num):
 def get_shipping_info(invoice_list: list, settings: dict):
     """Returns a new sorted invoice list populated with data from the shipping log"""
     for invoice in invoice_list:
-        invoice = assign_shipping_info(invoice, settings['File Paths']['Shipping Log'])        
+        invoice = assign_shipping_info(invoice, settings['File Paths']['Shipping Log'])
         if not invoice:
             return False
         invoice.sscc_number = generate_sscc(invoice.invoice_number)
@@ -155,8 +154,7 @@ def get_invoice_info(invoice_list: list, customer: str, settings: dict):
     sql = settings['SQL Settings']['Invoice Query'].format(','.join(['%s'] * (len(params) - 1)))
     with (get_sql_connection(settings['SQL Settings']['Connection String']).
           cursor(as_dict=True)) as cursor:
-        cursor.execute(sql,params)
-        testsql = (sql % params)
+        cursor.execute(sql, params)
         query_rows = cursor.fetchall()
         invoices = assign_items(query_rows, invoices, settings)
         if not invoices:
