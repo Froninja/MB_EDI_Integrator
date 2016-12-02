@@ -144,6 +144,7 @@ def validate_destination_log(file_settings):
                                         + " expected format. Please select a valid file.")
 
 class SettingsException(Exception):
+    """For use when a setting is invalid or missing"""
     def __init__(self, settings, settings_type, message):
         Exception.__init__(self)
         self.settings = settings

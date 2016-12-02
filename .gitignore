@@ -63,3 +63,5 @@ MB_EDI_Integrator.pyproj
 /tests/.cache/v/cache
 /td_log.txt
 /tu_log.txt
+*.sqlite
+.vscode/

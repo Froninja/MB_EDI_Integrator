@@ -1,6 +1,8 @@
 import os
 import pytest
+from sqlalchemy import create_engine
 from src.helpers.config import SettingsException, check_config, write_config
+from src.models.models import Base
 
 class TestEmptyConfig(object):
     def test_empty_config(self):
@@ -274,6 +276,7 @@ class TestValidConfig(object):
         write_valid_ship_log()
         write_valid_dest_log()
         write_valid_upc_log()
+        write_valid_po_db()
         settings = {
             "File Paths": {
                 "PO Database File": "test.sqlite",
@@ -299,6 +302,7 @@ class TestValidConfig(object):
         delete_ship_log()
         delete_upc_log()
         delete_dest_log()
+        delete_po_db()
 
 class TestPoDbNoPath(object):
     def setup(self):
@@ -406,7 +410,7 @@ class TestPoDbNoTables(object):
         delete_upc_log()
         delete_ship_log()
         delete_dest_log()
-        #delete_po_db()
+        delete_po_db()
 
 def write_valid_ship_log():
     with open("test_ship_log.csv", 'w') as ship_log:
@@ -432,9 +436,12 @@ def write_invalid_dest_log():
     with open("test_dest_log.txt", 'w') as dest_log:
         dest_log.write("cust;dest")
 
+def write_valid_po_db():
+    Base.metadata.create_all(create_engine(r'sqlite:///' + 'test.sqlite'))
+
 def write_invalid_po_db():
-    with open("test.sqlite", 'w') as po_db:
-        po_db.write("Oinkers")
+    with open("test.sqlite", 'w'):
+        pass
 
 def delete_ship_log():
     os.remove("test_ship_log.csv")
