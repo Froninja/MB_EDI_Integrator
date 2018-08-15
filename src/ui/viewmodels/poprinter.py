@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport
+import itertools
 
 class POPrintModel(QtCore.QAbstractTableModel):
     def __init__(self, po, parent, *args):
@@ -30,8 +31,8 @@ class POPrintModel(QtCore.QAbstractTableModel):
                 return QtCore.QVariant(self.store_list[int - 3].store_number)
         return QtCore.QAbstractTableModel.headerData(self, int, orientation, role)
 
-    def data(self, index, role = QtCore.Qt.DisplayRole):
-        if role == QtCore.Qt.DisplayRole:
+    def data(self, index, role = QtCore.Qt.DisplayRole):      
+        if role == QtCore.Qt.DisplayRole:            
             if index.row() == len(self.item_list):
                 if index.column() < 1:
                     return QtCore.QVariant('')
@@ -56,10 +57,13 @@ class POPrintModel(QtCore.QAbstractTableModel):
                 upc = self.item_list[index.row()].upc       
                 return QtCore.QVariant(sum([item.qty for item in i_list if item.upc == upc]))
             else:
+                
                 item = self.item_list[index.row()]
-                store = self.store_list[index.column() - 3]
-                if item in store.items:
-                    return QtCore.QVariant(item.qty)
+                store = self.store_list[index.column() - 3]                
+                
+                store_item = next((x for x in store.items if x.upc == item.upc), None)
+                if store_item:
+                    return QtCore.QVariant(store_item.qty)
                 else:
                     return QtCore.QVariant('')
 
